@@ -1,0 +1,3 @@
+例如：
+
+输出 CSV 时，必须符合 RFC 4180 标准。任何包含逗号（,）、双引号（”）或换行（CR/LF）的字段，都必须进行 CSV Escape。不要输出无法直接被 Salesforce Data Loader 导入的 CSV。
