@@ -1,3 +1,30 @@
 例如：
 
 输出 CSV 时，必须符合 RFC 4180 标准。任何包含逗号（,）、双引号（”）或换行（CR/LF）的字段，都必须进行 CSV Escape。不要输出无法直接被 Salesforce Data Loader 导入的 CSV。
+
+□ UTF-8
+
+□ 引号
+
+□ 逗号
+
+□ 换行
+
+□ 列数一致
+
+□ Data Loader Preview
+
+
+
+因为你们导的是 Knowledge 的 Answer（ArticleBody）。
+
+这个字段最容易出现：
+
+* HTML
+* <p>
+* <br>
+* 逗号
+* 日文引号
+* 换行
+
+所以 ArticleBody 一列建议统一做 CSV Escape，即使没有逗号也可以统一按标准处理。这样最稳，不容易因为个别特殊字符导致整批导入失败。
