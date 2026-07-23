@@ -1,0 +1,49 @@
+🇨🇳 中文版：Salesforce 富文本图片迁移标准作业流程 (SOP)
+阶段一：图片实体批量入库 (上传至 ContentVersion)
+1. 准备本地文件：将所有导出的历史图片集中放在一个本地文件夹中，文件名必须以“旧系统图片 4 位 ID”命名（例如：1059.png）。
+2. 制作导入 CSV (CSV_1)：准备包含以下三列的表格：
+Title：填入旧 ID（如 1059）。
+PathOnClient：填入本地绝对路径（如 C:\images\1059.png）。
+VersionData：同样填入本地绝对路径（这是触发物理上传的关键）。
+3. Data Loader 导入：使用 Insert 动作，对象选择 ContentVersion，导入上述 CSV_1。
+4. 获取成功日志：导出 Success 日志文件，保留系统新生成的 Id 列（通常以 068 开头，此为文件实体 ID）。
+阶段二：批量生成公开直链 (生成 ContentDistribution)
+1. 制作链接生成 CSV (CSV_2)：基于阶段一的成功日志，制作包含以下三列的表格：
+Name：自定义名称（如 Public_1059）。
+ContentVersionId：填入阶段一拿到的 068 开头的 ID。
+PreferencesAllowViewInBrowser：全部填入 TRUE。
+2. Data Loader 导入：使用 Insert 动作，对象选择 ContentDistribution，导入 CSV_2。
+阶段三：抽出终极映射字典 (Mapping 表)
+1. Data Loader 导出：使用 Export 动作，对象选择 ContentDistribution。
+2. 筛选核心字段：在查询界面，确保导出以下两个核心字段：
+ContentVersion.Title：即我们最初埋进去的旧 ID（如 1059）。
+ContentDownloadUrl：Salesforce 生成的超长公网安全直链。
+3. 保存字典：将这份导出的文件作为后续数据清洗的“标准字典库”。
+阶段四：富文本自动化清洗与回填 (更新 Knowledge 对象)
+1. 脚本执行清洗：使用 Python 或专业 ETL 工具，读取“源 FAQ 数据”和“标准字典库”。以旧 ID 为 Key，批量将 FAQ HTML 正文中的旧图片链接（如 ...id=1059）替换为新的 ContentDownloadUrl，并用正则表达式清除 @@alt1059@@ 等无效标签。
+2. 最终数据导入：将清洗后、生成了纯净 HTML 的最终 FAQ CSV 文件，通过 Data Loader 的 Update 或 Insert 功能，导入到 Knowledge (ナレッジ) 对象的富文本字段中。
+
+🇯🇵 日本語版：Salesforce リッチテキスト画像移行 標準作業手順書 (SOP)
+フェーズ1：画像ファイル実体のアップロード（ContentVersion への登録）
+1. ローカルファイルの準備：旧システムから抽出した全ての画像ファイルを一つのフォルダにまとめます。ファイル名は必ず「旧システムの4桁の画像ID」（例：1059.png）としてください。
+2. インポート用CSV（CSV_1）の作成：以下の3列を含むCSVを作成します。
+Title：旧ID（例：1059）
+PathOnClient：ローカルの絶対パス（例：C:\images\1059.png）
+VersionData：ローカルの絶対パス（※物理ファイルをアップロードするための必須マッピング項目）
+3. データローダでの実行：Insert（挿入）を選択し、対象オブジェクトを ContentVersion に指定して CSV_1 をインポートします。
+4. IDの取得：Success（成功）ログを出力し、システムが自動採番した Id 列（068から始まるID）を控えます。
+フェーズ2：公開直リンクの一括生成（ContentDistribution の作成）
+1. リンク生成用CSV（CSV_2）の作成：フェーズ1のSuccessログを基に、以下の3列を含むCSVを作成します。
+Name：任意の名前（例：Public_1059）
+ContentVersionId：フェーズ1で取得した068から始まるID
+PreferencesAllowViewInBrowser：すべて TRUE に設定
+2. データローダでの実行：Insert（挿入）を選択し、対象オブジェクトを ContentDistribution に指定して CSV_2 をインポートします。
+フェーズ3：マッピング辞書（マスタデータ）の抽出
+1. データローダでのエクスポート：Export（出力）を選択し、対象オブジェクトを ContentDistribution に指定します。
+2. 必須項目の抽出：SOQLクエリで以下の2項目を確実に抽出します。
+ContentVersion.Title：フェーズ1で登録した旧ID（例：1059）
+ContentDownloadUrl：SFDCが生成した公開用の長い直リンクURL
+3. 辞書の保管：この出力ファイルを、後続のクレンジング処理における「URL置換マッピング辞書」として保管します。
+フェーズ4：HTMLの自動クレンジングと本番データ登録（Knowledge への移行）
+1. スクリプトによる置換処理：PythonまたはETLツールを使用し、「移行元FAQデータ」とフェーズ3の「マッピング辞書」を読み込ませます。旧IDをキー（Key）として、HTML内の旧URL（例：...id=1059）を新SFDC直リンク（ContentDownloadUrl）に一括置換し、同時に @@alt1059@@ などの不要な旧システムタグを空文字に置換・除去します。
+2. 最終データのインポート：クレンジングが完了した綺麗なHTMLを含むFAQの最終CSVを、データローダの Update または Insert を用いて Knowledge (ナレッジ) オブジェクトのリッチテキスト項目へ反映します。
