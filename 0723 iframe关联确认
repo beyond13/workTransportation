@@ -1,0 +1,31 @@
+🔓 解决方案：在 Salesforce 中放开 iframe 嵌套权限
+
+请您登录您的 Salesforce Sandbox 后台，按照以下步骤操作：
+1. 进入 Experience Builder (エクスペリエンスビルダー)
+在 Salesforce 设置中，找到“所有站点 (All Sites)”，在您的站点旁边点击“生成器 (Builder)”进入 Experience Builder。
+
+2. 打开安全设置
+点击 Builder 左侧菜单栏最下方的 齿轮图标 (設定 / Settings)。
+在弹出的面板中，选择 “セキュリティとプライバシー (Security & Privacy)” 选项卡。
+
+3. 修改点击劫持保护级别 (Clickjack Protection Level)
+往下滚动，找到 “クリックジャック保護 (Clickjack Protection)” 这一项。
+它的默认值应该是“指定したドメインの外部ページでのフレーム化を許可する (Allow framing by the same origin only)”。
+为了我们现在的本地测试，请将它更改为： 👉 “すべてのページでのフレーム化を許可 (保護なし) / Allow framing by any page (No protection)”
+
+4. 发布站点
+修改完成后，别忘了点击右上角的 “公開 (Publish)” 按钮，让设置生效。
+
+💡 生产环境小贴士：现在选“所有页面”是为了方便您用本地 test_iframe.html 快速测试。未来正式上线时，为了安全，您需要把它改回“指定域名”，并把 *.sompo-japan.co.jp 加到白名单里，这样就只有损保的官网能嵌套它啦。
+
+
+
+🚀 终极破局方案：借用 CodePen 在线沙盒
+我们把刚才的 HTML 代码放在云端的 https 环境里运行，就能完美骗过浏览器。全程只需 10 秒：
+1. 打开免费沙盒网站： 请在浏览器中新建一个标签页，访问这个极客们常用的前端在线测试网站：👉 https://codepen.io/pen/
+
+2. 粘贴您的代码： 您会看到界面上有 HTML、CSS、JS 三个输入框。请把我们刚才那段带有橙色虚线框的 完整 HTML 代码，直接粘贴到写着 HTML 的那个框里。
+
+3. 见证奇迹： 粘贴完不需要点任何运行按钮，稍等一两秒，您往下看页面的纯白预览区域（或者右侧预览区）。
+
+因为 CodePen 这个网站本身是 https:// 协议的，符合浏览器的安全规范，这一次，您的 Salesforce Experience Cloud 页面一定能成功在橙色虚线框里加载出来！
