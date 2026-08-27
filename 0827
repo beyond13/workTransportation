@@ -1,0 +1,42 @@
+# Salesforce Event Monitoring Analytics App 配置失败问题排查总结
+
+## 1. 业务背景与目标
+* **目标**：在 Salesforce Sandbox 环境中，配置 `Event Monitoring Analytics App`，用于监控体验云 (Experience Cloud) FAQ 页面的访客访问记录（特别是需要抓取 Client IP 和 URI 以排查恶意爬虫）。
+* **期望结果**：成功生成带有 `URI` 数据的 Dashboard。
+
+## 2. 目前遇到的核心问题
+App 虽然能完成外壳的创建，但在后台利用 Dataflow / Recipe 抓取底层数据时，任务（Job）会瞬间失败，且系统不提供任何具体的错误日志，导致 Dashboard 始终为空。
+
+## 3. 已执行的排查步骤与“踩坑”记录
+
+### 步骤一：确认底层数据是否存在 (已确认存在)
+* **操作**：在 Developer Console 使用 SOQL 查询 `SELECT Id, EventType, LogFileLength, CreatedDate FROM EventLogFile WHERE EventType = 'URI' ORDER BY CreatedDate DESC`
+* **结果**：**成功查出 22 条数据**。
+* *(原图描述：Query Editor 界面截图，清晰显示有 22 行数据，EventType 均为 'URI'，最新生成时间为昨天。)*
+* **结论**：底层 `EventLogFile` 确实在正常生成，数据本身没问题。
+
+### 步骤二：排查向导配置选项 (已精简至最少)
+* **坑点**：最初尝试创建 App 时，向导里所有选项（如 Knowledge, Search 等）都选了 Yes，导致只要环境里缺少某种日志，脚本就会报错。
+* **对策**：重新配置 App (アプリケーションを再設定)。在向导中，**仅保留 `Include URI Dataset?` 为 Yes**，其余所有数据集选项均设为 No。
+* **附加设置**：取消勾选“仅增量更新 (Add only new event log file data...)”以强制全量抓取；日志级别设置为 `Warning`。
+
+### 步骤三：排查后台抓取账号权限 (已赋予最高权限)
+* **坑点**：怀疑后台抓取数据的机器人账号没有读取 `EventLogFile` 的权限。
+* **对策**：进入 Salesforce 的 `権限セット` (Permission Sets)。找到 `Event Monitoring Analytics 管理者` (Admin 权限集)。
+* **操作**：将该权限集分配给了 `Integration User, Analytics Cloud` (ユーザー インテグレーション) 账号，同时分配给了当前操作的系统管理员账号。
+* *(原图描述：权限集分配界面截图，成功勾选并为 Analytics Cloud Integration User 分配了 Event Monitoring Analytics Apps 的相关权限。)*
+
+### 步骤四：最终运行与“死亡报错”
+* **操作**：在完成上述所有精简配置和权限赋予后，彻底删除旧 App，重新创建了一个全新的 App。
+* **结果**：任务依然失败。
+* *(原图描述 1 - Job Monitor 列表：数据管理器的作业监控列表显示，`URI Upload flow`、`Users Upload flow` 等任务状态全部为红色的“失敗 (Failed)”，且“所要時間 (Duration)”全部为 `00:00:00`，属于瞬间死亡。)*
+* *(原图描述 2 - 报错详情为空：点击报错的 Job ID 进入详细页面后，没有显示任何具体的错误代码或文本，页面中央只有一张 Salesforce 标准的“仙人掌”插图，下方写着“まだ何もありません (此处空空如也 / Nothing here yet)”。)*
+
+## 4. 诉求
+基于以上排查过程：
+1. 底层确定有数据。
+2. 机器人确定有权限。
+3. 配置向导已排除无数据的干扰项。
+4. 任务在 0 秒瞬间死亡且没有任何 Error Log。
+
+**请问 GPT：在 Salesforce Sandbox 环境下，这种“0秒瞬间死亡且无日志”的情况，最有可能的根本原因是什么？是否涉及 Sandbox 的特定 License 限制、Data Sync 桥接断裂，或是某种必须在后台开启的隐藏开关？有什么绕过或验证的方法吗？**
