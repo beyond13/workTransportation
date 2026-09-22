@@ -1,0 +1,159 @@
+① Backlog课题概要
+# Knowledge本文のAccordion・動画に関する移行／運用方針の確認
+
+## 概要
+Salesforce Knowledge本文（Answer）のAccordion・動画について、
+Knowledge標準画面とExperience Cloud公開Siteで表示・動作に差異が発生する可能性があるため、
+以下2つの観点で事前確認を行う。
+
+- 初期データ移行
+- 移行後のFAQ新規作成・更新運用
+
+## 1. 初期データ移行
+
+現行FAQには、Accordionや動画等の特殊なHTML表現が含まれている可能性がある。
+
+特にAccordionについては、現行Siteで
+`onclick`によるJavaScriptと`display`切替を利用した実装が確認されている。
+
+このようなHTMLをそのままKnowledgeへ移行した場合、
+Salesforce側のHTML制限や公開Site側の表示方式により、
+現行と同様に動作しない可能性がある。
+
+動画についても、通常リンク／iframe／video等、
+現行データの実装方式を確認する必要がある。
+
+## 2. 今後のFAQ新規作成・更新
+
+Knowledge標準リッチテキストエディタにはAccordion等の機能が存在するが、
+Knowledge標準画面と公開Siteで同様に表示・動作するか確認が必要。
+
+動画についても、公開Siteで利用可能な登録方式を確認し、
+FAQ作成時の運用ルールを整理する必要がある。
+
+## 対応方針
+
+代表データを使用し、以下の流れで検証する。
+
+**現行データ → Knowledge登録 → Knowledge標準画面 → Experience Cloud公開Site**
+
+検証結果をもとに、Accordion・動画について以下を整理する。
+
+- そのまま利用可能
+- 移行時のHTML変換が必要
+- 公開Site側の対応が必要
+- 運用上の制限が必要
+
+初期データ移行および今後のFAQ運用の双方について対応方針を決定する。
+
+
+
+
+
+② 明天交给 Gemini 的交接 MD
+# Salesforce Knowledge Accordion／動画課題 引継ぎ
+
+## 1. プロジェクト背景
+
+Salesforce Experience Cloud（LWR）を利用した公開FAQ Siteを構築中。
+
+- FAQデータ：Salesforce Knowledge
+- 本文：KnowledgeのAnswer（Rich Text）
+- 公開対象：Guest User
+- 公開画面：Experience Cloud LWR Site
+- FAQ表示にはカスタムLWCも利用
+- 現行システムから約4,000件のFAQを初期移行予定
+- 初期投入後はSalesforce上でFAQを新規作成・更新する運用を想定
+
+現在、Knowledge本文内の特殊コンテンツ、
+特に以下2点について移行／表示互換性の課題を調査している。
+
+1. Accordion（折りたたみ）
+2. 動画
+
+---
+
+# 2. 課題を考える上での2つのシナリオ
+
+本課題は必ず以下を分けて考えること。
+
+## A. 初期データ移行
+
+現行システムのFAQ本文HTML
+↓
+Salesforce Knowledge Answerへ移行
+↓
+Experience Cloud公開Siteで表示
+
+約4,000件が対象。
+
+## B. 今後の新規／更新運用
+
+Salesforce Knowledge標準Rich Text Editor
+↓
+運用担当者がFAQ作成・更新
+↓
+Experience Cloud公開Siteで表示
+
+つまり、
+
+「旧HTMLをどう移行するか」
+
+と
+
+「Salesforce上で今後どの機能を使用可能とするか」
+
+は別問題として整理する。
+
+---
+
+# 3. Accordion：現在確認できていること
+
+## Salesforce側
+
+Knowledge Answerの標準Rich Text Editorには
+Accordionを作成する標準機能が存在する。
+
+Knowledge標準画面ではAccordionとして正常に動作する。
+
+一方、現在のExperience Cloud公開Siteでは、
+同じように表示／動作しないケースを確認している。
+
+公開Site側のレンダリング方法、
+特にカスタムLWCでのRich Text表示方法との関係について
+追加確認が必要。
+
+現時点では、
+
+「LWC開発が必須」
+
+とは決めつけないこと。
+
+標準機能、HTML保存形式、LWR、Rich Text Renderer等を確認してから
+対応方法を判断する。
+
+---
+
+# 4. 現行システムのAccordion
+
+ブラウザDevToolsで現行FAQを確認した結果、
+Accordionの一例は以下のような実装だった。
+
+概念的には：
+
+```html
+<a href="javascript:void(0);"
+   onclick="
+      var obj = document.getElementById('name_20221001');
+      if (obj.style.display == 'none') {
+          obj.style.display = 'block';
+      } else {
+          obj.style.display = 'none';
+      }
+   ">
+    <b>（2022年10月1日以降始期契約）</b>
+</a>
+
+<span id="name_20221001" style="display:block;">
+    本文...
+</span>
