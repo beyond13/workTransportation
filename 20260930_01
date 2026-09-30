@@ -1,0 +1,15 @@
+1. 针对 DDoS（流量轰炸）👉 SFDC 基盘完全胜任（依然正确）
+最新架构现状：Salesforce 目前全面启用了 Salesforce Edge Network（边缘网络），并在其数据中心最外层集成了业界顶级的抗 DDoS 基础设施（例如与 Cloudflare 等厂商底层的深度合作）。
+
+结论：面对 L3/L4（网络层/传输层）的无差别流量轰炸，Salesforce 的基础设施会自动清洗和吸收流量。你完全不需要在应用架构设计中去考虑网络层 DDoS 的防护，这依然是 Salesforce 官方 100% 兜底的责任。
+
+2. 针对 Bot（恶意爬虫）👉 必须依赖外部/专属 WAF 进行阻断（依然正确，甚至更加被强调）
+最新架构现状：
+
+Salesforce 原生的安全工具（如 Salesforce Shield Transaction Security）设计的初衷是防内鬼（例如：拦截内部员工违规导出大量报表）。但对于 Experience Cloud 上的 Guest User（未登录的匿名访客），Transaction Security 是极其无力的，它无法做到基于 IP 或设备指纹的精准高频访问拦截。
+
+虽然 Salesforce 为 Experience Cloud 提供了内置的 CDN（底层由 Cloudflare 提供），但这个标准版的 CDN 主要用于图片/静态资源加速，并不包含高级的 Bot Control（机器人流量管理）功能。
+
+Salesforce 最新的《Experience Cloud Security 最佳实践》中明确指出：如果客户公开站点面临严重的恶意数据抓取（Scraping）或 L7（应用层）API 滥用，强烈建议在 Salesforce 外部（即客户自己的域名解析层）部署企业级的 WAF（如 AWS WAF, Akamai, 完整版 Cloudflare 等），以实现灵活的 IP 封禁、速率限制（Rate Limiting）和自动 Bot 拦截。
+
+结论：SFDC 原生机制对爬虫“只能监控（Detective），难以自动阻断（Preventive）”的现状不仅没有改变，而且官方的最佳实践就是推荐客户像你提案的那样——在专属 Domain 前挂载 WAF 来解决问题。
