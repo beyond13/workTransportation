@@ -1,0 +1,140 @@
+# Data Loader導入に向けた事前確認
+
+## 概要
+
+Experience Cloud FAQサイトの本番運用開始後、各業務拠点にてData Loaderを利用したFAQデータの一括登録・更新を行う想定。
+
+各拠点への展開および操作手順書の作成に先立ち、Data Loaderのインストール方法、端末環境、Salesforceへの接続・認証方式、利用ユーザ・権限等の前提条件を確認する。
+
+事前確認後、代表端末で先行検証（Pilot）を実施し、その結果をもとに標準設定および導入手順を確定する。
+
+---
+
+## 進め方
+
+1. 事前条件の確認
+2. Data Loader標準設定の整理
+3. 代表端末での先行検証
+4. 導入・初期設定手順の確定
+5. 各業務拠点への展開
+
+---
+
+## TODO・確認事項
+
+### 1. 利用者・対象拠点
+
+- [ ] Data Loaderを利用する対象拠点の確認
+- [ ] 各拠点の利用担当者の確認
+- [ ] 利用するSalesforceユーザの確認
+  - 個人ユーザ
+  - 拠点単位の運用ユーザ
+  - 専用ユーザ
+- [ ] 新規利用者追加時の申請・権限付与方法の確認
+
+### 2. 端末・インストール
+
+- [ ] Data Loaderを利用する端末環境の確認
+- [ ] 利用者のソフトウェアインストール権限の確認
+- [ ] Data Loaderの配布・インストール方法の確認
+  - Salesforce公式サイトからダウンロード
+  - Software Center等の社内配布
+  - 情報システム部門による配布
+- [ ] 利用するData Loaderバージョンの確認
+- [ ] バージョンアップ時の対応方法・担当の確認
+
+### 3. ネットワーク
+
+- [ ] 各拠点からSalesforce本番環境へ接続可能か確認
+- [ ] Proxy設定の要否確認
+- [ ] 拠点ごとのネットワーク設定差異の確認
+- [ ] Firewall等によるSalesforce/API通信制限の確認
+
+### 4. Salesforce認証
+
+- [ ] Data Loaderの正式な認証方式を確認
+  - OAuth
+  - SSO
+  - Password + Security Token
+- [ ] MFAの影響確認
+- [ ] Login IP Range / Trusted IP等の確認
+- [ ] その他セキュリティ設定による影響確認
+
+### 5. Salesforce権限
+
+- [ ] API利用権限の確認
+- [ ] FAQ登録対象Objectへのアクセス権限確認
+- [ ] 必要項目のField Level Security確認
+- [ ] Record Type等の関連権限確認
+- [ ] Data Loader利用者向けPermission Set作成要否の確認
+- [ ] ログイン後、対象Objectが正常に表示されることの確認
+
+### 6. Data Loader標準設定
+
+- [ ] Data Loaderバージョン
+- [ ] 接続先
+- [ ] 認証方式
+- [ ] Proxy設定
+- [ ] CSV文字コード
+- [ ] Time Zone
+- [ ] Batch Size
+- [ ] FAQ登録用Mapping
+
+※ 各拠点で設定差異が発生しないよう、設定値およびMappingは可能な限り標準化する。
+
+---
+
+## 先行検証（Pilot）
+
+正式展開前に、代表となる業務端末1台で以下を確認する。
+
+- [ ] Data Loaderインストール
+- [ ] Data Loader起動
+- [ ] Salesforceログイン
+- [ ] 対象Object表示
+- [ ] CSV読込
+- [ ] Mapping読込
+- [ ] 少量データでの登録
+- [ ] Success / Error CSV確認
+- [ ] Salesforce画面上での登録結果確認
+
+Pilotで判明した設定・問題点を正式な導入手順へ反映する。
+
+---
+
+## 手順書作成
+
+Pilot完了後、以下の手順を作成する。
+
+### Data Loader導入・初期設定手順
+
+- インストール
+- 初期設定
+- Salesforceログイン
+- 接続確認
+- Object表示確認
+- 初回利用時の確認
+- エラー時の基本対応
+
+### FAQ一括登録・更新手順
+
+- CSV準備
+- Data Loader操作
+- Mapping
+- データ投入
+- Success / Error確認
+- Salesforce上での登録結果確認
+
+---
+
+## 優先確認事項
+
+まず以下の5点を優先して確認する。
+
+1. **各業務端末へのData Loaderの配布・インストール方法**
+2. **Salesforce本番環境への正式な認証方式**
+3. **Data Loaderを利用するSalesforceユーザの運用方針**
+4. **FAQ登録に必要なPermission / Permission Set**
+5. **代表端末でのPilot実施可否**
+
+上記確認後、Pilotを実施し、実際の環境・操作結果をもとに各拠点向けの導入・初期設定手順を確定する。
