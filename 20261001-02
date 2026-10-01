@@ -1,4 +1,4 @@
-# Salesforce Knowledge 标准 API × Postman 接続 PoC
+# Salesforce Knowledge 標準API × Postman 接続PoC
 
 ## 1. 目的
 
@@ -7,131 +7,109 @@ Postman から Salesforce の標準 Knowledge API を呼び出し、
 
 ### PoCゴール
 
-以下の経路で FAQ データを取得できること。
+以下の経路で、公開済みFAQをJSON形式で取得できること。
 
 Postman  
 ↓  
 OAuth 2.0  
 ↓  
-External Client App  
+External Client App（ECA）  
 ↓  
 Salesforce REST API  
 ↓  
 Knowledge Support API  
 ↓  
-公開済み FAQ を JSON 形式で取得
+Knowledge（FAQ）
 
 
 ---
 
-## 2. 前提
+## 2. 今回の確認範囲
 
-- Sandbox 環境を使用
-- Salesforce Knowledge が有効化済み
-- 公開済み（Online）の Knowledge が存在する
-- API 実行用 Salesforce ユーザを準備
-- Postman を使用
-- 最新 Salesforce のため、新規 OAuth 設定は原則 External Client App（ECA）を使用
+まず以下の順番で最小構成のPoCを実施する。
 
-※ 既存 Connected App は引き続き利用可能だが、
-新規構築では External Client App を使用する。
+1. External Client App 作成
+2. OAuth Access Token 取得
+3. Salesforce REST API 接続確認
+4. Knowledge Article 一覧取得
+5. Knowledge Article 詳細取得
+6. FAQ本文・必要項目の取得確認
+7. Data Category の取得・絞り込み可否確認
 
 
 ---
 
 ## 3. 事前確認
 
-### Salesforceユーザ
+### API実行ユーザ
 
-API実行ユーザについて以下を確認する。
-
-- [ ] Salesforce にログイン可能
-- [ ] `API Enabled` 権限あり
-- [ ] Knowledge の参照権限あり
-- [ ] 対象 FAQ を Salesforce 上で参照可能
-- [ ] 対象 Knowledge の項目参照権限あり
-- [ ] 必要に応じて Data Category の参照権限あり
+- □ Salesforce にログイン可能
+- □ `API Enabled` 権限あり
+- □ Knowledge の参照権限あり
+- □ 対象の公開済みFAQを参照可能
+- □ 対象 Knowledge 項目の参照権限あり
+- □ 必要に応じて Data Category の参照権限あり
 
 
 ---
 
 ## 4. External Client App 作成
 
-Salesforce Setup から External Client App を作成する。
+最新 Salesforce では、新規OAuth連携は原則として
+External Client App（ECA）を使用する。
 
-### Setup
-
-`設定（Setup）`
-
-↓
+Setup から以下を検索する。
 
 `External Client Apps`
-または
-`外部クライアントアプリケーション`
 
-を検索する。
+または
+
+`外部クライアントアプリケーション`
 
 ### 基本設定
 
 例：
 
-- External Client App Name：`Knowledge API PoC`
+- App Name：`Knowledge API PoC`
 - Contact Email：担当者メールアドレス
 
 ### OAuth設定
 
-OAuth を有効化する。
-
-PoCでは Server-to-Server 接続を想定し、
 OAuth 2.0 Client Credentials Flow を使用する。
 
-必要な OAuth Scope：
+OAuth Scope：
 
-- `Manage user data via APIs (API)`
+`Manage user data via APIs (API)`
 
-Client Credentials Flow を有効化する。
+Client Credentials Flow を有効化し、
+API実行用の `Run As User` を指定する。
 
-### Run As User
+### 確認
 
-API実行ユーザを指定する。
+- □ External Client App 作成
+- □ OAuth 有効化
+- □ API Scope 設定
+- □ Client Credentials Flow 有効化
+- □ Run As User 設定
+- □ Client ID 取得
+- □ Client Secret 取得
 
-例：
-
-`Knowledge API PoC User`
-
-※ API 実行時の Knowledge / 項目 / Category 等の参照可否は、
-基本的にこのユーザの権限に依存する。
-
-
----
-
-## 5. Client ID / Client Secret 確認
-
-External Client App 作成後、以下を取得する。
-
-- Client ID
-- Client Secret
-
-Postman で使用するため控えておく。
-
-※ Backlog 等には Client Secret を直接記載しないこと。
+※ Client Secret は Backlog 等に直接記載しない。
 
 
 ---
 
-## 6. Postman：Access Token取得
+## 5. Postman：Access Token取得
 
 ### Request
 
-POST
+`POST`
 
 `https://{MyDomain}.my.salesforce.com/services/oauth2/token`
 
 ### Body
 
 `x-www-form-urlencoded`
-
-以下を設定する。
 
 | KEY | VALUE |
 | --- | --- |
@@ -141,8 +119,6 @@ POST
 
 ### 想定レスポンス
 
-以下のようなレスポンスが返却されることを確認する。
-
 {
   "access_token": "xxxxx",
   "instance_url": "https://xxxxx.my.salesforce.com",
@@ -151,20 +127,21 @@ POST
 
 ### 確認
 
-- [ ] HTTP 200
-- [ ] access_token を取得できる
-- [ ] instance_url を取得できる
+- □ HTTP 200
+- □ `access_token` 取得成功
+- □ `instance_url` 取得成功
 
 
 ---
 
-## 7. REST API 接続確認
+## 6. Salesforce REST API 接続確認
 
-Knowledge API の前に、通常の REST API が利用可能か確認する。
+Knowledge API を確認する前に、
+通常の REST API が利用可能であることを確認する。
 
 ### Request
 
-GET
+`GET`
 
 `{{instance_url}}/services/data/vXX.X/limits`
 
@@ -178,10 +155,10 @@ GET
 
 ### 確認
 
-- [ ] HTTP 200
-- [ ] API Limit 情報が JSON で返却される
+- □ HTTP 200
+- □ API Limit 情報がJSONで返却される
 
-ここまで成功すれば、
+ここまで成功すれば、以下の経路は正常。
 
 Postman  
 ↓  
@@ -189,18 +166,16 @@ OAuth
 ↓  
 Salesforce REST API
 
-までの接続は成功。
-
 
 ---
 
-## 8. Knowledge Article 一覧取得
+## 7. Knowledge Article 一覧取得
 
 Salesforce 標準 Knowledge Support REST API を使用する。
 
 ### Request
 
-GET
+`GET`
 
 `{{instance_url}}/services/data/vXX.X/support/knowledgeArticles`
 
@@ -216,71 +191,50 @@ GET
 
 `Accept-Language: ja`
 
-※ `Accept-Language` は Knowledge API で重要。
-日本語 Knowledge の場合は `ja` を指定する。
+※ 日本語 Knowledge を取得するため `Accept-Language: ja` を指定する。
+
+
+### 確認
+
+- □ HTTP 200
+- □ Knowledge Article 一覧取得成功
+- □ Article ID 取得
+- □ Article Number 取得
+- □ Title 取得
+- □ URL Name 取得
+- □ 日本語FAQ取得
 
 
 ---
 
-## 9. Knowledge取得結果確認
+## 8. Knowledge Article 詳細取得
 
-以下のような Knowledge Article 情報が JSON 形式で取得できることを確認する。
-
-例：
-
-{
-  "articles": [
-    {
-      "id": "ka0XXXXXXXXXXXX",
-      "articleNumber": "000001234",
-      "title": "FAQタイトル",
-      "urlName": "faq-example"
-    }
-  ]
-}
-
-### 確認項目
-
-- [ ] HTTP 200
-- [ ] Knowledge Article が取得できる
-- [ ] Article ID が取得できる
-- [ ] Article Number が取得できる
-- [ ] Title が取得できる
-- [ ] URL Name が取得できる
-- [ ] 日本語 FAQ が取得できる
-
-
----
-
-## 10. Knowledge Article 詳細取得
-
-一覧取得後、取得した Article ID / URL Name を利用して
-Knowledge Article 詳細取得 API を確認する。
+一覧取得で取得した Article ID / URL Name を利用し、
+対象FAQの詳細情報を取得する。
 
 ### 確認対象
 
-- [ ] FAQタイトル
-- [ ] FAQ本文
-- [ ] URL Name
-- [ ] Article Number
-- [ ] 必要なカスタム項目
-- [ ] 公開状態
-- [ ] その他外部システム連携で必要となる項目
+- □ FAQタイトル取得
+- □ FAQ本文取得
+- □ Article Number取得
+- □ URL Name取得
+- □ 必要なカスタム項目取得
+- □ 公開済みFAQのみ取得可能であることを確認
 
-目的：
+### 確認ポイント
 
-外部システムが実際に必要とする FAQ 情報を
-Salesforce 標準 API だけで取得可能か確認する。
+外部システムが必要とするFAQ情報を、
+Salesforce標準APIのみで取得可能か確認する。
 
 
 ---
 
-## 11. Data Category 確認
+## 9. Data Category 確認
 
 本システムでは Knowledge に Data Category を設定しているため、
-PoC の次段階として Category 取得も確認する。
+Category情報についても標準APIでの取得可否を確認する。
 
-確認イメージ：
+想定：
 
 Knowledge  
 ↓  
@@ -292,46 +246,46 @@ Category指定
 ↓  
 対象FAQ取得
 
-確認項目：
+### 確認
 
-- [ ] Data Category Group を取得可能
-- [ ] Category 階層を取得可能
-- [ ] Category を指定して FAQ を絞り込み可能
-- [ ] 現行 FAQ の分類構造を外部システム側で利用可能
+- □ Data Category Group 取得可能
+- □ Category階層取得可能
+- □ Category指定によるFAQ絞り込み可能
+- □ 現行FAQの分類構造を外部システムから利用可能
 
 
 ---
 
-## 12. エラー発生時の確認順序
+## 10. エラー発生時の確認ポイント
 
-### Access Token が取得できない場合
+### Access Token が取得できない
 
-確認：
+以下を確認する。
 
-- [ ] Client ID
-- [ ] Client Secret
-- [ ] Client Credentials Flow
-- [ ] OAuth Scope
-- [ ] Run As User
-- [ ] External Client App のポリシー
-
-
-### `/limits` が失敗する場合
-
-確認：
-
-- [ ] Access Token
-- [ ] instance_url
-- [ ] API Enabled
-- [ ] OAuth Scope
+- □ Client ID
+- □ Client Secret
+- □ Client Credentials Flow
+- □ OAuth Scope
+- □ Run As User
+- □ External Client App のポリシー
 
 
-### `/limits` は成功するが Knowledge API が失敗する場合
+### `/limits` が失敗する
 
-優先的に以下を確認する。
+以下を確認する。
+
+- □ Access Token
+- □ instance_url
+- □ API Enabled
+- □ OAuth Scope
+
+
+### `/limits` は成功するが Knowledge API が失敗する
+
+以下の順番で確認する。
 
 1. Knowledge 参照権限
-2. 公開済み Article の存在
+2. 対象の公開済み Article の存在
 3. `Accept-Language: ja`
 4. Knowledge 項目参照権限
 5. Data Category Visibility
@@ -340,72 +294,56 @@ Category指定
 
 ---
 
-## 13. PoC完了条件
+## 11. PoC完了条件
 
-以下をすべて確認できた時点で PoC 完了とする。
+以下を確認できた時点で、PoC完了とする。
 
-- [ ] External Client App 作成
-- [ ] Postman から OAuth 認証成功
-- [ ] Access Token 取得成功
-- [ ] Salesforce REST API 接続成功
-- [ ] Knowledge Article 一覧取得成功
-- [ ] Knowledge Article 詳細取得成功
-- [ ] FAQ本文取得成功
-- [ ] 必要なカスタム項目取得可否を確認
-- [ ] Data Category 利用可否を確認
-
-
----
-
-## 14. PoC構成
-
-External System（PoC：Postman）
-        ↓
-OAuth 2.0 Client Credentials
-        ↓
-External Client App
-        ↓
-Salesforce API User
-        ↓
-Salesforce REST API
-        ↓
-Knowledge Support API
-        ↓
-Knowledge / FAQ
+- □ External Client App 作成完了
+- □ OAuth Access Token 取得成功
+- □ Salesforce REST API 接続成功
+- □ Knowledge Article 一覧取得成功
+- □ Knowledge Article 詳細取得成功
+- □ FAQ本文取得成功
+- □ 必要なカスタム項目取得可否確認
+- □ Data Category 利用可否確認
 
 
 ---
 
-## 15. PoC後に確認する課題
+## 12. PoC後の検討事項
 
 PoC成功後、本番連携を想定して以下を別途検討する。
 
-- API専用ユーザの設計
-- Permission Set の設計
-- External Client App の本番設定
-- Client Secret の管理方法
-- Token管理
-- API Limit
-- FAQ取得件数 / Pagination
-- Data Category による絞り込み
-- FAQ更新時の外部システムとの同期方式
-- エラーハンドリング
-- ログ / 監視
-- Sandbox → 本番への設定移行方法
+- □ API専用ユーザ設計
+- □ Permission Set 設計
+- □ External Client App 本番設定
+- □ Client Secret 管理方法
+- □ Token管理
+- □ API Limit
+- □ Pagination
+- □ 大量FAQ取得方式
+- □ Data Category による絞り込み
+- □ FAQ更新時の同期方式
+- □ エラーハンドリング
+- □ ログ・監視
+- □ Sandbox → 本番への設定移行方法
 
 
 ---
 
-## 16. 今回のPoCでは対象外
+## 13. 今回のPoC対象外
 
 PoCを早期に完了させるため、以下は初回確認では対象外とする。
 
 - Apex REST API の新規開発
 - 独自APIの開発
-- 外部システム側の実装
+- 外部システム側の本実装
 - 大量データ性能試験
 - 本番用セキュリティ設計
 - 本番用監視設計
 
-まず Salesforce 標準機能のみで
-「外部から Knowledge FAQ を取得可能であること」を確認する。
+まずは Salesforce 標準機能のみで、
+
+「外部システムから Knowledge（FAQ）を取得可能であること」
+
+を確認する。
