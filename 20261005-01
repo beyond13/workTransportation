@@ -1,0 +1,154 @@
+可以。你现在的“作战书”最好不要再写成“废止 SYS-09”，而是写成 「監視運用の再設計」。这样既能削掉日次人工监视和 Analytics App 开发，又能把客户最担心的“异常时怎么发现、怎么查 IP”保留下来。
+下面这版比较适合拿去内部讨论。
+
+# 公開FAQサイト セキュリティ監視運用 見直し方針
+
+## 1. 基本方針
+
+現行の「Event Monitoring Analyticsを日次で目視確認する運用」から、
+Salesforce標準の自動防御・異常検知を起点とした
+**イベントドリブン型の監視・調査運用**へ見直す。
+
+---
+
+## 2. 防御レイヤの整理
+
+Internet / Attack Traffic
+        ↓
+### ① Salesforce Edge Network
+- Salesforce基盤／ネットワークレベルのDDoS防御
+- 異常トラフィックの検知・緩和
+- Salesforce基盤へ到達する前段での防御
+
+※既存Salesforce回答に記載されていた
+DDoS Mitigation、トラフィック迂回等は主にこのレイヤに相当
+
+        ↓
+### ② Salesforce CDN
+- Experience Cloud公開サイトの入口
+- WAF
+- Rate Limiting
+- SQL Injection / XSS / DDoS等の悪意ある通信を自動検知・遮断
+
+必要に応じて：
+- Custom WAF Rule
+  - IP Address
+  - ASN
+  - Country
+  - Allow / Block / Managed Challenge
+
+        ↓
+### ③ Experience Cloud Site
+- LWR
+- Guest User
+- Knowledge
+- Sharing / CRUD / FLS
+- Apex / LWC等のアプリケーション制御
+
+※主目的はアクセス権・アプリケーション制御であり、
+大規模DDoS防御を行うレイヤではない
+
+        ↓
+### ④ Salesforce Org内部
+- Profile Login IP Range
+- Network Access
+- MFA / Session制御
+
+※主に認証ユーザ向けのアクセス制御
+※公開Guest Siteの攻撃元IP Blockとは目的が異なる
+
+---
+
+## 3. 新しい監視・調査運用
+
+### 平常時
+- Salesforce Edge / CDNの標準防御により自動防御
+- Transaction Security / Guest User Anomalyによる異常検知・通知
+- Event Monitoring Analyticsの日次目視確認は実施しない
+
+### 異常検知時
+1. Transaction Security等の通知を確認
+2. 発生時刻・対象URI・事象を整理
+3. Event Monitoring / Event Logを調査
+4. Source IP、URI、User Agent、アクセス傾向等を確認
+5. 不審なアクセス元を特定・分析
+6. 必要に応じて追加対応
+   - Custom WAF Rule
+   - 外部WAF
+   - Salesforce Supportへの問い合わせ
+   - その他のセキュリティ対策
+
+---
+
+## 4. Event Monitoring Analytics Appの扱い
+
+- Analytics Appは可視化手段であり、IP情報そのものの取得元ではない
+- 日次監視用Dashboardの新規開発は原則不要とする
+- 異常発生時はEvent Log等を利用して詳細調査する
+- そのため、今後は「IP調査手順」を具体化する
+
+---
+
+## 5. 今回の確認事項
+
+SYS-09見直しの前提として、以下を確認する。
+
+- [ ] 本番FAQでSalesforce CDNを利用する構成か
+- [ ] Salesforce CDNのWAF / Rate Limitingが有効となる構成か
+- [ ] 本番Custom DomainのDomain Configuration Option
+- [ ] Salesforce CDNを利用しない場合、外部WAF/CDNを利用する構成か
+- [ ] IT Sandboxで本番相当のCDN構成を検証可能か
+
+---
+
+## 6. 結論
+
+監視そのものを廃止するのではなく、
+
+**「日次の手動監視」から
+「標準防御＋異常通知＋必要時の詳細調査」へ再設計する。**
+
+これにより、
+- 日次目視監視を削減
+- Analytics App開発を削減
+- 異常時のIP調査能力は維持
+- Salesforce標準サービスとの責任分界を明確化する。
+
+
+
+========================================================================================================================
+然后关于 CDN怎么确认推进，我建议你不要再从“有没有那个按钮”开始找，而是按下面顺序查，会快很多。
+第一步先确认 本番最终 Domain 架构。Salesforce 官方现在明确区分两种：Serve the domain with the Salesforce CDN 和 Use a Third-Party Service or CDN。如果是前者，流量走 Salesforce CDN；如果是后者，流量先经过外部 WAF/CDN。Salesforce
+https://help.salesforce.com/s/articleView?id=platform.domain_mgmt_domain_config_options.htm&language=en_US&type=5&utm_source=chatgpt.com
+你直接问环境负责人：
+本番FAQのCustom Domainは、Salesforce CDNで配信する構成でしょうか。それとも既存の外部WAF/CDNを経由する構成でしょうか。
+
+第二步，如果回答 Salesforce CDN，确认两个点：
+Domain Configuration Option が「Serve the domain with the Salesforce CDN」になっているか。
+Salesforce CDNのEnhanced Security Services（WAF / Rate Limiting）が有効か。
+
+Salesforce 官方明确写了，LWR Site 使用 Salesforce CDN + Single Domain Certificate 时，WAF 和 Rate Limiting 会自动检测/阻断 SQLi、XSS、DDoS 等恶意流量。Salesforce
+https://help.salesforce.com/s/articleView?id=xcloud.shr_routing_and_policies_content_delivery_network.htm&language=en_US&type=5&utm_source=chatgpt.com
+第三步，再查 Custom WAF Rule。这个是附加项，不要先卡在这里。官方现在明确支持最多 10 条基于 IP / ASN / Country 的 Custom WAF Rules。Salesforce
+https://help.salesforce.com/s/articleView?id=platform.domain_mgmt_salesforce_cdn.htm&language=en_US&type=5&utm_source=chatgpt.com
+
+第四步，如果现在只有 IT Sandbox，也不是没法验证。Salesforce 官方明确写了：要在 Sandbox 测试 Salesforce CDN 的 Custom Domain，需要从拥有该 Sandbox 的 Production Org 的 Domains 页面配置；一个 Sandbox Org 最多可以有一个使用 Salesforce CDN 的 Custom Domain。Salesforce
+https://help.salesforce.com/s/articleView?id=sf.community_builder_cdn.htm&language=en_US&type=5&utm_source=chatgpt.com
+所以我建议你下一步只做一个小确认票：
+
+
+# 本番FAQ Salesforce CDN構成確認
+
+## 確認事項
+- [ ] 本番FAQのCustom Domain構成を確認
+- [ ] Domain Configuration Optionを確認
+- [ ] Salesforce CDN利用有無を確認
+- [ ] WAF / Rate Limitingの有効状態を確認
+- [ ] IT Sandboxで同等構成を検証可能か確認
+
+## 確認先
+Salesforce環境／Domain管理担当
+
+## 目的
+SYS-09監視運用見直しの前提として、
+本番FAQに適用されるSalesforce標準のDDoS／Web攻撃防御範囲を確定する。
