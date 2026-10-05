@@ -152,3 +152,17 @@ Salesforce環境／Domain管理担当
 ## 目的
 SYS-09監視運用見直しの前提として、
 本番FAQに適用されるSalesforce標準のDDoS／Web攻撃防御範囲を確定する。
+
+
+
+==============================================================================================================================================================
+1. Salesforce標準のDDoS防御範囲
+Experience Cloud公開サイトに対して、Salesforce Edge Network側で標準提供されるDDoS防御・Mitigationの範囲を確認したい。
+2. Salesforce CDNの適用条件
+LWR Experience Cloud Siteにおいて、Salesforce CDN / WAF / Rate Limitingが有効となる条件、および現在のOrgでの確認方法を確認したい。
+3. Custom WAF Rule
+IP / ASN / Country Blockの利用条件、およびSandboxでの検証可否を確認したい。
+4. Guest公開サイトの推奨監視方式
+DDoS対策としてEvent Monitoring Analyticsを日次で目視監視する方式ではなく、Edge/CDNによる自動防御＋Transaction Security等の異常通知＋Event Logによる事後調査という運用は、Salesforceとして妥当な考え方か確認したい。
+5. Source IP調査
+LWR Guest Siteで異常アクセスが発生した場合、Event Monitoring Analytics Appを利用せずに、どのEvent Log / Event TypeからSource IP、URI、User Agent等を確認するのが推奨か。
