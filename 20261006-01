@@ -1,0 +1,303 @@
+# 件名
+Experience Cloud公開FAQサイトにおけるDDoS対策・Salesforce CDN / WAFの推奨構成について
+
+## お問い合わせ概要
+
+Experience Cloud（LWR）を利用した公開FAQサイトを構築しています。
+
+本番運用に向けて、第三者WAFを利用しない場合の
+Salesforce標準DDoS対策、Salesforce CDN / WAFの推奨構成、
+およびサービス影響発生時の対応について確認したく、
+お問い合わせしました。
+
+## 環境
+
+- Experience Cloud
+- LWR Site
+- 公開サイト（Guest Userアクセス）
+- FAQデータ：Salesforce Knowledge
+- 現在はSandbox環境で開発・検証中
+- 本番ではCustom Domainを利用予定
+- 第三者WAFの利用有無は検討中
+
+---
+
+## 確認事項
+
+### 1. Salesforce標準DDoS防御とSalesforce CDNの役割分担
+
+Salesforce Edge Network等で提供される
+基盤レベルのDDoS防御と、
+
+Salesforce CDNの
+WAF / Rate Limitingによる防御について、
+それぞれの役割・防御範囲をご教示ください。
+
+特に以下を確認したいです。
+
+- Salesforce CDNを利用しない場合でも適用されるDDoS対策
+- Salesforce CDNを利用することで追加される防御
+- 基盤側防御とCDN / WAF側防御の役割分担
+
+---
+
+### 2. 第三者WAFを利用しない場合の推奨構成
+
+LWR Experience Cloud公開サイトにおいて、
+第三者WAFを利用しない場合、
+
+Salesforce CDNを利用し、
+WAF / Rate Limiting等の標準機能を利用する構成を
+Salesforceとして推奨構成と考えてよいでしょうか。
+
+また、以下について確認したいです。
+
+- Salesforce CDNの設定箇所
+- 本番サイトでCDN / WAF / Rate Limitingが有効であることの確認方法
+- 設定／参照に必要な権限
+- Managed WAF Rulesの推奨設定
+- Custom WAF Ruleの利用条件
+
+---
+
+### 3. Custom WAF RuleによるBlock / Unblock運用
+
+Custom WAF Ruleを利用した不正アクセス元の制御について、
+以下をご教示ください。
+
+- IP Address / ASN / CountryによるBlock可否
+- 1つのRule内で複数IPを管理可能か
+- Rule作成後にIP等の条件を追加／削除可能か
+- Block済みIPを解除する場合の推奨手順
+- Rule無効化／条件削除／IP削除によるUnblock可否
+- 設定変更後の反映時間
+- Block / Unblock時にサービス停止が発生するか
+- 誤Block時の推奨ロールバック方法
+
+また、不正IPをBlacklistのように
+継続的に追加／削除する運用は推奨されるでしょうか。
+
+あわせて以下も確認したいです。
+
+- 1 Ruleあたりの推奨IP数
+- Expression長／条件数等の制限
+- 多数IPを管理する場合の推奨方式
+
+---
+
+### 4. CDN / WAFの動作確認・ログについて
+
+運用時に、Salesforce CDN / WAFが
+実際に機能していることを確認する方法をご教示ください。
+
+特に以下を確認したいです。
+
+- リクエストがSalesforce CDNを経由したことを確認する方法
+- WAF / Rate LimitingによるBlock実績を確認する方法
+- Custom WAF RuleのRule Hitを確認する方法
+- WAF関連ログ／イベント／レポートの有無
+- 誤Block調査時に利用可能な情報
+
+---
+
+### 5. 標準防御を超えてサービス影響が発生した場合
+
+Salesforce基盤側DDoS対策および
+Salesforce CDNのWAF / Rate Limitingを利用している場合でも、
+攻撃によってサービス影響が発生する可能性はあると認識しています。
+
+その場合について、以下をご教示ください。
+
+- Salesforce側のIncident Response
+- DDoS Mitigation
+- Service Recovery
+- Trust等による障害通知
+- Salesforce Supportへ問い合わせるべきタイミング
+- 顧客側で事前に準備すべき追加対策／運用
+
+また、
+Salesforce側と顧客側の責任分界についても
+確認したいです。
+
+---
+
+### 6. Sandboxでの事前検証
+
+本番導入前にSandboxで以下を検証したいです。
+
+- Salesforce CDN
+- WAF
+- Rate Limiting
+- Custom WAF Rule
+- IP Block / Unblock
+
+本番相当構成をSandboxで検証する場合の
+推奨手順をご教示ください。
+
+- Production Org側で必要な設定
+- Sandbox側で必要な設定
+- Custom Domainの要否
+- 必要権限
+- SandboxでCustom WAF Ruleを利用する条件
+
+---
+
+## 確認目的
+
+本件の目的は、
+公開FAQサイトに対してSalesforce標準機能で
+どこまでDDoS／Web攻撃対策を実施できるかを明確化し、
+
+必要に応じた追加対策および運用設計の判断材料とすることです。
+
+
+
+# 件名
+Experience Cloud公開FAQサイトにおけるGuest User異常検知・Source IP調査・監視運用について
+
+## お問い合わせ概要
+
+Experience Cloud（LWR）の公開FAQサイトについて、
+Guest Userの不正／異常アクセス監視運用を検討しています。
+
+現在はEvent Monitoring Analyticsを
+日次で目視確認する方式を想定していますが、
+
+今後は、
+
+1. Transaction Security / Guest User Anomalyによる自動通知
+2. 異常発生時のみEvent Log等を詳細調査
+3. 必要に応じてSource IP等を特定し追加対応
+
+というイベントドリブン型の運用への見直しを検討しています。
+
+この方針および推奨調査方法について確認したく、
+お問い合わせしました。
+
+---
+
+## 確認事項
+
+### 1. Guest User AnomalyのScore閾値
+
+現在、Transaction Security Policyで
+以下の条件によるメール通知を検討しています。
+
+- Guest User Anomaly Event
+- Score >= 0.8
+- Requested EntitiesにKnowledgeを含む
+- 条件一致時にメール通知
+
+Score 0.8を初期通知閾値として利用することは
+一般的に妥当でしょうか。
+
+以下をご教示ください。
+
+- Salesforceとして推奨される初期閾値の考え方
+- 運用開始後のチューニング方法
+- Scoreの評価方法
+- Requested Entities = Knowledgeを追加条件とする場合の注意点
+- 誤検知を抑えるための推奨設定
+
+---
+
+### 2. 異常通知後のSource IP調査方法
+
+Guest User Anomaly / Transaction Securityで
+異常通知が発生した場合、
+
+以下を調査するSalesforce推奨方法をご教示ください。
+
+- Source IP
+- URI
+- User Agent
+- 発生時刻
+- アクセス件数／傾向
+
+特に以下を確認したいです。
+
+- Event Monitoring Analytics Appは必須か
+- Analytics Appを利用せずEvent Log / API等から調査可能か
+- LWR Experience Siteに適したEvent Type
+- Source IPを確認可能な具体的な項目
+- Guest User Anomaly Eventと関連Event Logを紐付ける方法
+
+---
+
+### 3. Source IPの意味について
+
+Salesforce CDNや第三者WAF / Reverse Proxyを利用する場合、
+Salesforce側で確認できるSource IPが
+どのIPを示すのか確認したいです。
+
+以下についてご教示ください。
+
+- Guest User Anomaly Eventで確認できるIP
+- Event Logで確認できるSource IP / Remote IP
+- Salesforce CDN経由時に元Client IPを確認可能か
+- 第三者WAF / Proxy経由時にProxy IPとなるケースがあるか
+- 元Client IPを調査する場合の推奨方法
+
+---
+
+### 4. Event Monitoring Analytics Appの日次監視について
+
+現在はEvent Monitoring Analyticsを
+日次で目視確認する運用を想定しています。
+
+一方で、以下への変更を検討しています。
+
+#### 平常時
+- Salesforce Edge / CDNによる自動防御
+- Transaction Securityによる異常検知・通知
+- Event Monitoring Analyticsの日次目視監視は実施しない
+
+#### 異常発生時
+- Transaction Security等の通知を起点に調査
+- Event Log等からSource IP / URI / User Agent等を確認
+- 必要に応じて追加対応を実施
+
+このような
+
+**「自動防御 → 異常通知 → 必要時のみ詳細調査」**
+
+というイベントドリブン型の運用は、
+Salesforce標準機能の利用方針として妥当でしょうか。
+
+また、公開LWR SiteのDDoS／不正アクセス対策として、
+Event Monitoring Analytics Appを日次で目視監視することに
+Salesforceとして推奨事項があるかについても確認したいです。
+
+---
+
+### 5. LWR SiteにおけるAnalytics / Event Logの適用範囲
+
+LWR Experience Siteの場合、
+Event Monitoring Analytics AppとEvent Logで
+取得可能な情報に差異／制約があると認識しています。
+
+以下をご教示ください。
+
+- Analytics Appで取得できないLWR Siteイベント
+- Event Logでは取得可能な情報
+- 公開LWR Siteの異常アクセス調査に推奨されるEvent Type
+- IP調査を目的とする場合の推奨取得方法
+- Analytics Appを利用しない場合の推奨運用
+
+---
+
+## 確認目的
+
+本件の目的は、
+監視自体を廃止することではなく、
+
+現在の日次手動監視から、
+
+**Transaction Securityによる異常通知
+＋ 異常発生時のEvent Log調査
+＋ 必要時の追加対応**
+
+へ監視運用を再設計することです。
+
+Salesforce標準機能として推奨される
+異常検知・Source IP調査・運用方法を確認したいです。
