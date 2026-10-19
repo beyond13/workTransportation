@@ -1,0 +1,190 @@
+お問い合わせの詳細
+
+お問い合わせ番号: 474900412
+重要度: Level 4 - Medium
+タイトル: 【運用設計確認】Experience Cloud公開FAQサイトにおけるGuest User異常検知・Source IP調査・イベントドリブン監視運用への移行について
+説明: 【サポート窓口の方への事前のお願い】
+本件は、本番環境におけるセキュリティアーキテクチャの根幹設計、およびエンタープライズ要件でのコンプライアンス（監査）方針の策定に直結する非常に重要な技術確認となります。
+公開ドキュメントの記載範囲を超えた、プラットフォームの内部仕様、技術的な制限事項、および大規模運用におけるベストプラクティスに関する深い見解を求めております。
+双方のコミュニケーションコストを削減し、早期かつ的確な解決を図るため、恐れ入りますが、初動の段階からTier 2（シニアエンジニア）、またはセキュリティ・ネットワーク領域のSME (Subject Matter Expert) の方へ本ケースをアサインいただきますよう強くお願い申し上げます。
+
+お問い合わせ概要
+Experience Cloud（LWR）の公開FAQサイトについて、Guest Userの異常アクセス監視運用の再設計を検討しています。
+現在は「Event Monitoring Analyticsを日次で目視確認する方式」を想定していますが、今後は「Transaction Securityによる自動検知 → 異常通知時のみEvent Log等を詳細調査」というイベントドリブン型の運用への見直しを検討しております。この方針の妥当性および推奨調査方法について確認したく、お問い合わせしました。
+
+確認事項
+1. Guest User AnomalyのScore閾値
+現在、Transaction Security Policyで以下の条件（Guest User Anomaly Event / Score >= 0.8 / Requested EntitiesにKnowledgeを含む）によるメール通知を検討しています。
+Score 0.8を初期通知閾値として利用することは一般的に妥当でしょうか。
+運用開始後のチューニング方法と、誤検知を抑えるための推奨設定をご教示ください。
+
+2. 異常通知後のSource IP調査方法
+異常通知が発生した場合のSalesforce推奨の事後調査方法（Source IP, URI, User Agent等の特定）をご教示ください。
+Event Monitoring Analytics Appは必須か、あるいはEvent Log / API等から直接調査可能か
+LWR Experience Siteに適したEvent Typeと、Anomaly Eventと関連Event Logを紐付ける方法
+
+3. Source IPの意味とClient IPの特定について
+Guest User Anomaly EventおよびEvent Logで確認できるIPは、何を指しますか。
+【重要】Salesforce CDNや第三者WAF/Proxyを経由した場合、Event Logにおける真のClient IPは X-Forwarded-For ヘッダー等の別フィールドに保持されますでしょうか。正確な攻撃元IPを特定するための参照仕様をご教示ください。
+
+4. 【最重要】イベントドリブン監視運用への移行妥当性について
+現在の日次目視監視（手動運用）から、以下のフローへの変更を検討しています。
+平常時：Salesforce Edge / CDNによる自動防御 ＋ Transaction Securityによる異常検知・通知（日次の目視監査は実施しない）
+異常発生時：Transaction Securityのアラート通知を起点にEvent Log等を調査し、必要に応じて追加対応を実施
+このような「自動防御 → 異常通知 → 必要時のみ詳細調査」というイベントドリブン型の運用は、Salesforce標準機能を利用する上でのベストプラクティスとして妥当でしょうか。公開LWR Siteのセキュリティ対策として、ダッシュボードを日次で目視監視し続けることに対して、Salesforceからの強い推奨要件等があればご教示ください。
+
+5. LWR SiteにおけるAnalytics / Event Logの適用範囲
+Analytics AppとEvent Logで取得可能な情報に差異や制約はありますでしょうか。
+【重要】Auraフレームワークと比較した場合、公開LWR SiteにおいてEvent Monitoring（特にLightning URI Event等）で取得できない、あるいは制限されるクライアントサイドのイベントは存在しますでしょうか。
+タイムゾーン: (GMT+09:00) Japan Standard Time (Asia/Tokyo)
+
+お問い合わせ番号 474900412 に新しいコメントがあります
+
+Kasumi Motoki 10 月 8 @ 5:45 PM JST
+
+いつもお世話になっております。
+Salesforce サポートの元木と申します。
+
+本件「【運用設計確認】Experience Cloud公開FAQサイトにおけるGuest User異常検知・Source IP調査・イベントドリブン監視運用への移行について」について、ご案内までお時間をいただき大変申し訳ございません。
+
+まず前提といたしまして、当窓口はテクニカルサポート窓口になることから、1問1答の機能ベースでのご案内であれば、公開ドキュメントの範囲内でご案内が可能であるものの、貴社における推奨アーキテクチャやベストプラクティスのご案内を含めたコンサルティングはサポート外となり、具体的なご支援ご案内が難しい状況でございます。
+上記に関しまして、あらかじめご理解ご容赦のほどお願い申し上げます。
+
+なお、いただいている内容に関しましては、弊社テクニカルサポート窓口にてご案内可能な情報があるかどうか、現在確認を進めている状況でございます。
+
+つきましては、ご要望を満たすご案内とならない場合もあり恐れ入りますが、確認に今しばらくお時間をいただけますようお願い申し上げます。
+
+引き続きとなりますが、どうぞよろしくお願いいたします。
+
+
+お問い合わせ番号 474900412 に新しいコメントがあります
+
+Kasumi Motoki 10 月 16 @ 6:09 PM JST
+※文字数の都合上、4回に分割させていただきます。
+
+お世話になっております。
+Salesforce サポートの元木です。
+
+この度はご連絡までお時間を要してしまい、誠に申し訳ございません。
+お問い合わせいただいた内容についてご連絡いたします。
+
+まず、先のご案内と重複し恐れ入りますが、弊社テクニカルサポート窓口では、1問1答の機能ベースでのご案内であれば、公開ドキュメントの範囲内でご案内が可能であるものの、貴社における推奨アーキテクチャやベストプラクティスのご案内を含めたコンサルティングはサポート外となり、具体的なご支援ご案内が難しいことあらかじめ何卒ご理解ご容赦いただけますようお願い申し上げます。
+
+▼Premier、Premier Plus、および Signature Success: 開発者サポート
+https://help.salesforce.com/s/articleView?id=000382591&type=1
+＝＝＝抜粋＝＝＝
+Salesforce コア開発者サポートには、次のものは含まれません。
+アーキテクチャ設計の提案、カスタム JavaScript、HTML、および CSS
+＝＝＝＝＝＝＝＝
+
+上記を前提といたしまして、今回は公式ドキュメント等から確認できた範囲内で、参考情報をご案内いたします。実際の環境・要件への適合性につきましては、恐れ入りますがお客さまご自身にて十分に検証のうえご判断いただきますようお願いいたします。
+
+＞1. Guest User AnomalyのScore閾値
+まず、誠に恐れ入りますが、弊社サポート窓口ではチューニング方法や誤検知を抑えるための推奨設定のご案内はできかねることから、以下に関連ドキュメントをご案内させていただきます。
+何卒ご容赦いただけますと幸いです。
+
+▼ GuestUserAnomalyEvent | Platform Events Developer Guide | Platform Events Developer Guide | Salesforce Developers
+https://developer.salesforce.com/docs/platform/platform-events/guide/sforce-api-objects-guestuseranomalyevent.html
+＝＝＝抜粋＝＝＝
+Score
+Description: Specifies how significantly the guest user behavior deviates from the other guest users. It’s formatted as a number between 0 and 1.
+＝＝＝＝＝＝＝＝
+※適宜ブラウザの翻訳機能をご利用ください
+
+▼ トランザクションセキュリティポリシーの活用例
+https://successjp.salesforce.com/article/NAI-000654
+
+▼ トランザクションセキュリティ
+https://help.salesforce.com/s/articleView?id=xcloud.enhanced_transaction_security_policy_types.htm&type=5
+
+【次に続きます】1/4
+
+【前から続きます】2/4
+
+＞2. 異常通知後のSource IP調査方法
+推奨の事後調査方法のご案内が難しいこと恐れ入りますが、GuestUserAnomalyEventStoreのSourceIpやUserAgentをご確認ください。
+
+また、Log同士を紐づける方法につきましては明記された情報は確認することができませんでしたが、「GuestUserAnomalyEventStore」にも、例えば「URI イベント」にもLoginKeyやSessionKey項目が確認できましたため、こちらにてご確認ならびに照合が可能かお試しいただけますと幸いです。
+
+▼ GuestUserAnomalyEventStore | Platform Events Developer Guide | Platform Events Developer Guide | Salesforce Developers
+https://developer.salesforce.com/docs/platform/platform-events/guide/sforce-api-objects-guestuseranomalyeventstore.html
+＝＝＝抜粋＝＝＝
+GuestUserAnomalyEventStore is an object that stores the event data of GuestUserAnomalyEvent.
+
+SourceIp
+Description: The source IP address of the client that logged in. For example, 126.7.4.2.
+
+UserAgent
+Description: User Agent for this event.
+
+LoginKey
+Description: The string that ties together all events in a given user’s login session. The session starts with a login event and ends with either a logout event or the user session expiring. For example, lUqjLPQTWRdvRG4.
+
+SessionKey
+Description: The user’s unique session ID. Use this value to identify all user events within a session.
+＝＝＝＝＝＝＝＝
+
+▼ URI イベント種別 | Salesforce プラットフォームのオブジェクトリファレンス | Salesforce Developers
+https://developer.salesforce.com/docs/atlas.ja-jp.object_reference.meta/object_reference/sforce_api_objects_eventlogfile_uri.htm
+＝＝＝抜粋＝＝＝
+LOGIN_KEY
+特定のユーザーのログインセッションのすべてのイベントを結び付ける文字列。ログインイベントから開始され、ログアウトイベントまたはユーザーセッションの期限切れで終了します。
+
+SESSION_KEY
+ユーザーの一意のセッション ID。この値を使用して、セッション内のすべてのユーザーイベントを識別できます。ユーザーがログアウトしてから再びログインすると、新しいセッションが開始されます。
+＝＝＝＝＝＝＝＝
+
+【次に続きます】2/4
+
+【前から続きます】3/4
+
+＞3. Source IPの意味とClient IPの特定について
+恐れ入りますが、Source IPとClient IPに関しては、以下のドキュメントに記載のとおりであり、これ以上の情報は確認することができない次第でございました。
+
+なお、Salesforce CDNや第三者WAF/Proxyを経由した場合の動作に関しては、以下の「サードパーティサービスまたは CDN を使用するカスタムドメインに関する考慮事項」での抜粋部分がご参考になるかと存じますが、正確な動作に関してはSandbox等にて動作をご確認いただけますと幸いです。
+
+▼ GuestUserAnomalyEventStore | Platform Events Developer Guide | Platform Events Developer Guide | Salesforce Developers
+https://developer.salesforce.com/docs/platform/platform-events/guide/sforce-api-objects-guestuseranomalyeventstore.html
+＝＝＝抜粋＝＝＝
+SourceIp
+Description: The source IP address of the client that logged in. For example, 126.7.4.2.
+＝＝＝＝＝＝＝＝
+
+▼ URI イベント種別 | Salesforce プラットフォームのオブジェクトリファレンス | Salesforce Developers
+https://developer.salesforce.com/docs/atlas.ja-jp.object_reference.meta/object_reference/sforce_api_objects_eventlogfile_uri.htm
+＝＝＝抜粋＝＝＝
+CLIENT_IP
+Salesforce サービスを使用しているクライアントの IP アドレス。
+＝＝＝＝＝＝＝＝
+
+▼ サードパーティサービスまたは CDN を使用するカスタムドメインに関する考慮事項 | Salesforce ヘルプ
+https://help.salesforce.com/s/articleView?id=platform.domain_mgmt_external_host_considerations.htm&type=5
+＝＝＝抜粋＝＝＝
+IP アドレス追跡と制限
+サードパーティを使用してドメインを提供する場合、Salesforce では、Salesforce への TCP/IP 接続からのソース IP アドレスを使用して記録します。
+
+その他のソース IP アドレス要求ヘッダー (X-Forwarded-For (XFF) 要求ヘッダーなど) は無視されます。そのため、元のソース IP アドレスを Salesforce に渡して、プロファイル IP 範囲制限、ログイン履歴のソース IP アドレス、およびイベントログの行で使用することはできません。
+＝＝＝＝＝＝＝＝
+
+【次に続きます】3/4
+
+【前から続きます】4/4
+
+＞4. 【最重要】イベントドリブン監視運用への移行妥当性について
+「自動防御 → 異常通知 → 必要時のみ詳細調査」という運用がベストプラクティスとして妥当かどうかは、運用設計・コンサルティングの範囲のため、言及が難しいこと何卒ご理解ご容赦いただけますと幸いです。
+
+LWR SiteにおけるAnalytics / Event Logの適用範囲
+Analytics App と Event Log の取得情報の差異、および Aura と比較して LWR Site で取得できない・制限されるクライアントサイドイベント(Lightning URI Event 等)については、誠に恐縮ながら明記された公開ドキュメントは現時点では確認ができませんでした。
+■ご参考
+▼ EventLogFile でサポートされているイベント種別 | Salesforce プラットフォームのオブジェクトリファレンス | Salesforce Developers
+https://developer.salesforce.com/docs/atlas.ja-jp.260.0.object_reference.meta/object_reference/sforce_api_objects_eventlogfile_supportedeventtypes.htm
+
+ご案内は以上です。
+
+最後に重ねてのお詫びとなり恐れ入りますが、本件に関しましては、弊社サポートにて詳細なご案内をすることができず、可能な限りでのご案内となりましたこと、誠に申し訳ございません。
+
+上記を一旦、ご案内とさせていただきますが、認識に齟齬がある場合や内容にご不明な点がありましたらお気軽にお知らせください。
+
+差し上げました内容に問題がないようでしたら、お手数ですがコメントにてご返信をいただくか［お問い合わせの完了］にてお知らせいただけますと幸いです。
+
+どうぞよろしくお願いいたします。
