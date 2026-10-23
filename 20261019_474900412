@@ -188,3 +188,61 @@ https://developer.salesforce.com/docs/atlas.ja-jp.260.0.object_reference.meta/ob
 差し上げました内容に問題がないようでしたら、お手数ですがコメントにてご返信をいただくか［お問い合わせの完了］にてお知らせいただけますと幸いです。
 
 どうぞよろしくお願いいたします。
+
+
+
+
+
+
+お問い合わせ番号 474900412 に新しいコメントがあります
+ 
+Kasumi Motoki	10 月 22 @ 3:31 PM JST
+
+
+お世話になっております。
+Salesforce サポートの元木です。
+
+ご多用の中、ご返信くださいまして誠にありがとうございます。
+
+まず、ご確認のうえ追加でご質問いただいたところ大変恐れ入りますが、Salesforce サポートではお問い合わせ管理の都合や、それぞれの事象にフォーカスした調査を実施するため、お客さまには基本的に一問一答での対応にご協力いただいております。
+
+つきましては、追加でご質問いただきました以下のご質問に関しましては、ご質問ごとに新規お問い合わせを作成いただくことは可能でしょうか。
+
+1. Guest User Anomalyの検知対象と通知タイミング
+2. 通知から詳細調査までの具体的な参照方法
+※1ケースは原則1人の担当者でご対応させていただいており、調査観点が異なるご質問を頂戴いたしますと、ご回答までにお時間を要する可能性が高くなるため、このようなご依頼を差し上げております。
+
+お客さまにご負担をおかけし、大変恐縮ではございますが、何卒ご理解賜われますようお願い申し上げます。
+なお、お客さま側での新規起票が難しいご事情がございます場合、弊社側でお問い合わせを分割させていただくことも可能でございますため、その際はご返信にてお知らせください。
+
+弊社お問い合わせ管理の都合となりますこと心苦しい限りではございますが、上記についてご確認のほどお願い申し上げます。
+
+なお、「## 3. Salesforce CDN経由時のIPとLWRのアクセス記録」に関しましては、引き続き本ケースにてご対応をさせていただきます。
+
+以下に確認させていただきました内容についてご案内いたしますので、ご確認のほどよろしくお願いいたします。
+
+■回答
+まず、本件に関して明記された公開資料等は確認ができませんでしたため、類似のお問い合わせベースでの回答でございますこと、何卒ご了承ください。
+
+確認いたしましたところ、URIイベントのCLIENT_IPには、ゲストユーザーの原アクセス元のIPが記録される想定でございます。
+
+なお、GuestUserAnomalyEventStoreのSourceIpに関しては、恐れ入りますが先のご案内で記載いたしました公開ドキュメント以上の情報は確認ができない状況でございました。
+
+上記より、お手数ではございますが、実際の動作に関しましてはSandbox等にてご確認いただけますようお願い申し上げます。
+ご確認いただいた際に想定されない挙動を確認いたしましたらその詳細を記載のうえ別途お問い合わせをいただけますと幸いです。
+
+また、公開LWRサイトのFAQ閲覧・検索に関連するイベント種別つきましては、以下をご参考ください。
+なお、誠に恐縮ながら記録対象となるものと記録されないものに差異につきましても明記された公開ドキュメントのご用意がないことから、以下ドキュメントにてご確認されたい内容があるかどうかもご確認いただけますようお願い申し上げます。
+
+▼ URI イベント種別 | Salesforce プラットフォームのオブジェクトリファレンス | Salesforce Developers
+https://developer.salesforce.com/docs/atlas.ja-jp.object_reference.meta/object_reference/sforce_api_objects_eventlogfile_uri.htm
+
+▼ サイトイベント種別 | Salesforce プラットフォームのオブジェクトリファレンス | Salesforce Developers
+https://developer.salesforce.com/docs/atlas.ja-jp.object_reference.meta/object_reference/sforce_api_objects_eventlogfile_sites.htm
+
+▼ GuestUserAnomalyEventStore | Platform Events Developer Guide | Platform Events Developer Guide | Salesforce Developers
+https://developer.salesforce.com/docs/platform/platform-events/guide/sforce-api-objects-guestuseranomalyeventstore.html
+
+上記を一旦、ご案内とさせていただきますが、認識に齟齬がある場合や内容にご不明な点がありましたらお気軽にお知らせください。
+
+どうぞよろしくお願いいたします。
