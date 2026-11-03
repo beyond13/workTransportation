@@ -1,0 +1,1035 @@
+# Salesforce 开发规模盘点作战书
+
+## 1. 目标与边界
+
+### 1.1 最终目标
+
+掌握既存 Salesforce 环境的：
+
+1. 项目开发和定制了哪些资源。
+2. 各类资源有多少。
+3. 哪些资源已有使用依据。
+4. 哪些属于标准基础、安装包或历史遗留候选。
+5. 还有哪些范围没有取得或无法确认。
+
+最终形成：
+
+- 资源明细清单。
+- 按类型统计的开发规模表。
+- 涉及的标准对象一览。
+- 使用情况及未确认事项。
+- 一页日文汇报概要。
+
+### 1.2 信息安全边界
+
+所有组织信息保留在公司认可的 Salesforce IDE 工作区或内部保存位置。
+
+注意：浏览器版 IDE 的工作区通常位于服务端，不等于个人电脑本地。
+
+以下内容不提供给个人免费 GPT：
+
+- Apex、LWC、Flow 等代码或 Metadata 内容。
+- 真实资源名称、业务字段、接口地址。
+- 组织ID、用户名、用户清单。
+- 取得的 JSON、CSV、XML、日志或内部截图。
+- Token、密码、认证URL、认证文件。
+
+允许如何使用 GPT，以公司规定为准。
+不默认认为“汇总数字”或“脱敏内容”就一定允许外发。
+
+GPT的辅助范围：
+
+- 解释公开的Salesforce命令。
+- 生成不含公司信息的通用脚本。
+- 使用虚构数据测试脚本。
+- 提供Excel公式、CSV格式、日文报告模板。
+- 根据抽象现象排查操作问题。
+
+本次组织操作仅限：
+
+- 读取。
+- SOQL查询。
+- Metadata列举。
+- Retrieve到工作区。
+
+不执行Deploy、DML、删除、权限分配、配置修改或匿名Apex。
+
+---
+
+## 2. 先统一“开发规模”的统计口径
+
+### 2.1 资源归属与使用状态分开记录
+
+不要用一个“使用/不使用”字段同时表达全部意思。
+
+资源归属：
+
+- 项目自研／项目定制。
+- 标准基础。
+- 安装包。
+- 其他项目。
+- 未确认。
+
+使用依据：
+
+- 有运行依据。
+- 有启用／入口／引用依据。
+- 尚未发现依据。
+- 已由负责人确认停用。
+- 未确认。
+
+报告区分：
+
+- 开发资产主集计。
+- 标准对象涉及范围。
+- 安装包依赖。
+- 停用／历史遗留。
+- 要确认。
+
+“无命名空间”只是自研候选线索，不能直接断言是本项目开发。
+“有命名空间”也需要结合安装包和项目背景判断。
+
+### 2.2 哪些应排除，哪些应保留
+
+| 资源情况 | 处理方式 |
+| --- | --- |
+| 环境里存在、没有项目使用依据的标准对象 | 不计开发对象数；没有依据时不列入业务涉及范围 |
+| 被业务使用的标准对象 | 列入涉及范围；不算自定义对象 |
+| 标准对象上的自定义字段、校验规则、Record Type | 作为定制资产保留，另确认项目归属 |
+| 自定义对象 | 保留为开发候选，再确认归属和使用情况 |
+| 安装包对象、程序、组件 | 单独列示，不混入项目自研数量 |
+| 自定义程序尚未发现引用 | 保留，标记使用依据待确认 |
+| 有效的Trigger、Flow | 记录启用状态；启用不等于近期实际运行 |
+| 测试类 | 单列数量和代码行数 |
+| 自动生成的派生资源 | 不重复当作独立业务开发资产 |
+| 标准Profile、默认Layout等 | 存在不等于本项目定制，需要确认 |
+| 已确认停用的历史资源 | 单列，不直接删除 |
+
+关键原则：
+
+先取得候选，再收敛主集计。
+不要在采集阶段提前丢弃难以判断的资源。
+
+### 2.3 不做一个“全部组件合计”作为主要结论
+
+不同资源的计量单位不同：
+
+- 一个字段。
+- 一个Apex类。
+- 一个LWC Bundle。
+- 一个Flow定义。
+- 一个权限集。
+
+不能简单相加后称为系统复杂度。
+
+领导汇报以“分类规模＋主要构成”为主。
+不根据数量直接换算开发人日。
+
+---
+
+## 3. 执行顺序
+
+第一轮：取得资源清单，形成数量初版。
+第二轮：确认项目归属、入口及使用依据。
+第三轮：按需分析代码量和配置复杂度。
+
+建议先按1人日安排数量初版。
+使用情况的完整确认另行安排，不承诺一天内证明所有资源的实际使用。
+
+---
+
+## 4. 第一步：检查Terminal和连接
+
+以下命令按Bash终端编写。
+
+### 4.1 确认工具
+
+逐条执行：
+
+```bash
+sf --version
+```
+
+```bash
+node --version
+```
+
+```bash
+sf config get target-org
+```
+
+只在公司环境查看输出。
+
+不要把完整输出、组织名称或认证信息发给GPT。
+
+不要为了检查连接执行：
+
+```text
+sf org display
+sf org display --verbose
+```
+
+这些命令可能显示认证信息。
+
+### 4.2 明确指定目标组织
+
+将下面占位符替换为已经连接的组织别名。
+
+```bash
+export INVENTORY_ORG='替换为目标组织别名'
+```
+
+后续命令统一明确指定该组织。
+不要仅依赖默认组织。
+
+### 4.3 确认目标是Sandbox
+
+```bash
+sf data query \
+  --target-org "$INVENTORY_ORG" \
+  --query "SELECT IsSandbox FROM Organization"
+```
+
+预期：IsSandbox为true。
+
+同时在IDE状态栏和组织画面核对：
+这是否确实是本次调查的目标环境。
+
+如果查不到或权限不足，先通过组织画面确认。
+不要把查询失败理解成连接正常。
+
+### 4.4 只有尚未认证时才登录
+
+如果IDE已经连接，无需重新登录。
+
+确实未连接时，可以使用：
+
+```bash
+sf org login web \
+  --instance-url '替换为公司Sandbox的My Domain登录URL' \
+  --alias inventory-target
+```
+
+认证只在公司的正常登录流程中完成。
+
+浏览器版IDE如果对认证方式另有要求，遵循公司既有连接手顺，
+不要为了本次盘点新建Connected App或扩大权限。
+
+登录后重新设置：
+
+```bash
+export INVENTORY_ORG='inventory-target'
+```
+
+---
+
+## 5. 第二步：建立独立调查目录
+
+先确认当前目录：
+
+```bash
+pwd
+```
+
+本阶段列举资源不要求Retrieve。
+后面Retrieve时，需要位于包含sfdx-project.json的Salesforce项目内。
+
+每次执行使用新目录，保留上一次结果：
+
+```bash
+export INVENTORY_RUN="inventory/run-$(date +%Y%m%d-%H%M%S)"
+```
+
+```bash
+mkdir -p \
+  "$INVENTORY_RUN/raw" \
+  "$INVENTORY_RUN/logs" \
+  "$INVENTORY_RUN/reports"
+```
+
+目录含义：
+
+- raw：原始取得结果，内部保存。
+- logs：命令日志，内部保存。
+- reports：整理后的CSV和Markdown，内部保存。
+
+这些文件均不上传给个人GPT或个人GitHub。
+
+### 5.1 记录可用Metadata类型
+
+```bash
+sf org list metadata-types \
+  --target-org "$INVENTORY_ORG" \
+  --json \
+  > "$INVENTORY_RUN/raw/metadata-types.json" \
+  2> "$INVENTORY_RUN/logs/metadata-types.log"
+```
+
+### 5.2 取得安装包一览
+
+```bash
+sf package installed list \
+  --target-org "$INVENTORY_ORG" \
+  --json \
+  > "$INVENTORY_RUN/raw/installed-packages.json" \
+  2> "$INVENTORY_RUN/logs/installed-packages.log"
+```
+
+这两个命令如果失败，记录原因。
+不要因为返回空白或报错，就把可用类型／安装包数记成0。
+
+---
+
+## 6. 第三步：批量取得资源名称一览
+
+### 6.1 这一步的目的
+
+先取得：
+
+- 资源类型。
+- 完整名称。
+- 命名空间。
+- API返回的包状态。
+
+这一阶段不下载Apex或LWC正文。
+
+本步骤得到的是“可列举的候选资源”。
+尚不能直接称为“本项目正在使用的开发资产”。
+
+### 6.2 新建通用采集脚本
+
+在IDE Explorer中新建文件：
+
+```text
+scripts/collect-inventory.cjs
+```
+
+将下面通用代码粘贴进去。
+它只使用Node.js内置模块，不需要安装npm包。
+
+```javascript
+const fs = require('node:fs');
+const path = require('node:path');
+const { spawnSync } = require('node:child_process');
+
+const types = [
+  'CustomObject','CustomField','RecordType','ValidationRule',
+  'ApexClass','ApexTrigger','LightningComponentBundle','AuraDefinitionBundle',
+  'ApexPage','ApexComponent','Flow','Workflow','ApprovalProcess',
+  'Layout','FlexiPage','CustomApplication','CustomTab','CustomLabel',
+  'CustomMetadata','PermissionSet','PermissionSetGroup','MutingPermissionSet',
+  'CustomPermission','Profile','SharingRules','Role','Group','Queue',
+  'NamedCredential','ExternalCredential','RemoteSiteSetting','AuthProvider',
+  'ConnectedApp','Network','CustomSite','ExperienceBundle',
+  'DigitalExperienceBundle','ReportType','ReportFolder','DashboardFolder','EmailFolder'
+];
+
+function parseList(text) {
+  const j = JSON.parse(text);
+  if (j.status !== 0) throw Error('CLI_STATUS');
+  if (Array.isArray(j.result)) return j.result;
+  if (j.result && typeof j.result.fullName === 'string') return [j.result];
+  throw Error('UNEXPECTED_RESULT');
+}
+
+function csv(rows) {
+  return '\uFEFF' + rows.map(r =>
+    r.map(v => '"' + String(v ?? '').replaceAll('"','""') + '"').join(',')
+  ).join('\r\n');
+}
+
+function main() {
+  const org = process.env.INVENTORY_ORG;
+  const dir = process.env.INVENTORY_RUN;
+
+  if (!org || !dir) {
+    throw Error('Set INVENTORY_ORG and INVENTORY_RUN first');
+  }
+
+  for (const p of ['raw','logs','reports']) {
+    fs.mkdirSync(path.join(dir,p), {recursive:true});
+  }
+
+  if (fs.existsSync(path.join(dir,'reports','inventory.csv'))) {
+    throw Error('Use a NEW run directory');
+  }
+
+  const inventory = new Map();
+  const calls = [];
+  let sequence = 0;
+
+  function list(type, folder) {
+    const tag = String(++sequence).padStart(3,'0') + '_' + type;
+    const args = [
+      'org','list','metadata',
+      '--metadata-type',type,
+      '--target-org',org,
+      '--json'
+    ];
+
+    if (folder !== undefined) args.push('--folder',folder);
+
+    const r = spawnSync('sf',args,{
+      encoding:'utf8',
+      maxBuffer:64*1024*1024
+    });
+
+    fs.writeFileSync(
+      path.join(dir,'raw',tag+'.json'),
+      r.stdout || ''
+    );
+
+    fs.writeFileSync(
+      path.join(dir,'logs',tag+'.log'),
+      r.stderr || r.error?.message || ''
+    );
+
+    let rows;
+
+    try {
+      if (r.error || r.status !== 0) throw Error('COMMAND_FAILED');
+      rows = parseList(r.stdout);
+
+      if (rows.some(x => typeof x.fullName !== 'string')) {
+        throw Error('MISSING_FULLNAME');
+      }
+    } catch (e) {
+      calls.push([
+        type,folder ?? '',tag,
+        '取得不可・要確認','',e.message
+      ]);
+
+      console.log(type + ': 要確認（詳細は社内ログ）');
+      return null;
+    }
+
+    for (const x of rows) {
+      inventory.set(type+'\0'+x.fullName,[
+        type,
+        x.fullName,
+        x.namespacePrefix ?? '',
+        x.manageableState ?? '',
+        '未確認',
+        '未判定',
+        '要確認',
+        ''
+      ]);
+    }
+
+    calls.push([
+      type,folder ?? '',tag,
+      '成功・完全性要照合',rows.length,''
+    ]);
+
+    console.log(type + ': ' + rows.length + '件（要照合）');
+    return rows;
+  }
+
+  const collected = {};
+
+  for (const type of types) {
+    collected[type] = list(type);
+  }
+
+  for (const [folderType,itemType] of [
+    ['ReportFolder','Report'],
+    ['DashboardFolder','Dashboard'],
+    ['EmailFolder','EmailTemplate']
+  ]) {
+    const folders = new Set(
+      (collected[folderType] || []).map(x => x.fullName)
+    );
+
+    if (itemType === 'Report' || itemType === 'EmailTemplate') {
+      folders.add('unfiled$public');
+    }
+
+    if (!folders.size) {
+      calls.push([
+        itemType,'','','未照会・フォルダ要確認','',''
+      ]);
+    }
+
+    for (const folder of folders) {
+      list(itemType,folder);
+    }
+  }
+
+  const rows = [...inventory.values()].sort((a,b) =>
+    (a[0]+'\0'+a[1]).localeCompare(b[0]+'\0'+b[1])
+  );
+
+  fs.writeFileSync(
+    path.join(dir,'reports','inventory.csv'),
+    csv([
+      [
+        '種別','完全名','名前空間','パッケージ状態',
+        '帰属','使用根拠区分','報告区分','根拠・備考'
+      ],
+      ...rows
+    ])
+  );
+
+  fs.writeFileSync(
+    path.join(dir,'reports','collection_status.csv'),
+    csv([
+      [
+        '種別','フォルダ','保存ファイル',
+        '取得状態','応答件数','エラー区分'
+      ],
+      ...calls
+    ])
+  );
+
+  const lines = [
+    '# SF開発資産 列挙結果（帰属・使用状況は未判定）',
+    '',
+    'これは取得候補の件数です。自社開発件数・実利用件数ではありません。',
+    'CLI/APIの可視範囲、警告、フォルダ、件数上限等は別途照合してください。',
+    '',
+    '| 種別 | 重複排除後の列挙件数 | 取得不可・未照会要求数 |',
+    '| --- | ---: | ---: |'
+  ];
+
+  for (const type of new Set(calls.map(x => x[0]))) {
+    const n = rows.filter(x => x[0] === type).length;
+
+    const bad = calls.filter(x =>
+      x[0] === type && x[3] !== '成功・完全性要照合'
+    ).length;
+
+    lines.push(`| ${type} | ${n} | ${bad} |`);
+  }
+
+  lines.push(
+    '',
+    'Workflow・SharingRulesはオブジェクト単位のコンテナ件数です。個別ルール数ではありません。',
+    'Flowの有効状態・定義数、標準オブジェクトの定制、帰属と使用根拠は別工程で確認します。'
+  );
+
+  fs.writeFileSync(
+    path.join(dir,'reports','inventory_summary.md'),
+    lines.join('\n')
+  );
+
+  console.log('保存先: ' + path.join(dir,'reports'));
+}
+
+if (require.main === module) main();
+module.exports = {parseList,csv};
+```
+
+### 6.3 実行
+
+先检查语法：
+
+```bash
+node --check scripts/collect-inventory.cjs
+```
+
+再执行：
+
+```bash
+node scripts/collect-inventory.cjs
+```
+
+会按类型顺次读取资源。
+
+某一种类型因版本、权限、许可证或API支持情况失败时：
+脚本会记录“要確認”，继续取得其他类型。
+
+不要立即为解决失败而扩大权限。
+先记录调查缺口。
+
+### 6.4 产出
+
+在本次run目录的reports下生成：
+
+1. inventory.csv
+   - 资源明细。
+   - 按“类型＋完整名称”去重。
+   - 归属、使用依据、报告区分留待确认。
+
+2. collection_status.csv
+   - 每次取得请求的状态。
+   - 包括文件夹、原始文件位置、失败情况。
+
+3. inventory_summary.md
+   - 按类型汇总的候选数量。
+   - 不能直接作为最终开发规模结论。
+
+注意：
+
+- 成功不代表组织内全部资源都已可见。
+- 报表／Dashboard的个人文件夹、共享权限、特殊目录等需核对。
+- 日志中的警告也要查看。
+- 不同Metadata类型和API版本可能有列举限制。
+- 某些类型需要通过其他API或Retrieve补充。
+- 这些输出全部留在公司环境。
+
+---
+
+## 7. 第四步：补充启用状态和标准对象定制线索
+
+建立补充目录：
+
+```bash
+mkdir -p "$INVENTORY_RUN/signals"
+```
+
+### 7.1 Flow定义与启用状态
+
+这是标准API查询，不加--use-tooling-api。
+
+```bash
+sf data query \
+  --target-org "$INVENTORY_ORG" \
+  --query "SELECT ApiName, IsActive, ProcessType, NamespacePrefix FROM FlowDefinitionView" \
+  --json \
+  > "$INVENTORY_RUN/signals/flow-definitions.json" \
+  2> "$INVENTORY_RUN/logs/flow-definitions.log"
+```
+
+用途：
+
+- 按定义统计Flow。
+- 区分类型。
+- 区分启用／未启用。
+
+不要把所有版本累加成Flow数量。
+Process Builder等旧自动化需要结合ProcessType分类。
+
+### 7.2 Trigger状态和关联对象
+
+这是Tooling API查询：
+
+```bash
+sf data query \
+  --target-org "$INVENTORY_ORG" \
+  --use-tooling-api \
+  --query "SELECT Id, Name, NamespacePrefix, Status, TableEnumOrId FROM ApexTrigger" \
+  --json \
+  > "$INVENTORY_RUN/signals/apex-triggers.json" \
+  2> "$INVENTORY_RUN/logs/apex-triggers.log"
+```
+
+用途：
+
+- 区分Active／Inactive。
+- 找到Trigger涉及的对象。
+
+TableEnumOrId可能是对象名称，也可能是对象定义ID。
+需要时在内部做对应，不直接把ID当作对象API名。
+
+### 7.3 自定义字段及父对象线索
+
+这是Tooling API查询：
+
+```bash
+sf data query \
+  --target-org "$INVENTORY_ORG" \
+  --use-tooling-api \
+  --query "SELECT Id, DeveloperName, NamespacePrefix, TableEnumOrId FROM CustomField" \
+  --json \
+  > "$INVENTORY_RUN/signals/custom-fields.json" \
+  2> "$INVENTORY_RUN/logs/custom-fields.log"
+```
+
+用途：
+
+发现标准对象上的自定义字段，避免只调查__c对象而漏掉定制。
+
+例如：
+
+- Account本身不算开发对象。
+- Account上新增的项目字段需要保留。
+- 它们会使Account进入“标准对象定制范围”的候选。
+
+查询失败、结果截断或存在分页／限制时，需要补充取得。
+不把文件中的行数直接宣布为完整总数。
+
+---
+
+## 8. 第五步：收敛“本项目开发资产”
+
+在公司环境中打开inventory.csv。
+可以在本地Excel编辑，也可以使用公司允许的文本工具。
+
+不需要把CSV交给GPT。
+
+逐类填充：
+
+- 帰属。
+- 使用根拠区分。
+- 報告区分。
+- 根拠・備考。
+
+建议按这个顺序确认：
+
+### 8.1 先分出安装包
+
+对照installed-packages.json：
+
+- 包名称。
+- 命名空间。
+- 包的归属。
+- 项目是否只调用包能力，还是另有扩展开发。
+
+安装包资源不混入自研数量。
+基于包对象新增的自研字段、程序等仍需单独保留。
+
+不能仅凭“无命名空间”就认定自研。
+Unlocked Package等情况需要结合包信息和既有资料。
+
+### 8.2 再确认项目归属
+
+优先使用：
+
+1. 既有资源管理台账／设计资料。
+2. 项目代码仓库及交付物。
+3. 命名规范。
+4. 负责人确认。
+5. 建立、修改信息等辅助线索。
+
+名称、创建人、最后修改时间都只能作为线索。
+不要单独据此下结论。
+
+### 8.3 处理标准对象
+
+标准对象分两份管理：
+
+A. 标准对象本体：
+列入业务涉及范围，不计自定义对象数量。
+
+B. 对标准对象的项目定制：
+按实际类型计数，例如：
+
+- 自定义字段。
+- 校验规则。
+- Record Type。
+- Layout／Lightning Page。
+- Trigger。
+- Flow。
+- 共享规则等。
+
+标准对象在全权限Profile里出现，
+不等于本项目实际使用了它。
+
+不要因为管理员可以访问很多标准对象，就全部纳入业务范围。
+
+### 8.4 处理使用情况
+
+采用以下证据层次：
+
+| 依据 | 能说明什么 |
+| --- | --- |
+| 日志、任务执行、接口调用记录 | 在指定观察期间有实际运行依据 |
+| 有效Trigger、启用Flow | 已配置可执行入口 |
+| 页面、应用、按钮、子Flow等引用 | 有配置入口或依赖依据 |
+| Apex或其他Metadata静态引用 | 有静态依赖依据 |
+| 负责人确认、现行手顺 | 有业务使用依据 |
+| 没有搜到引用 | 只能说尚未发现依据 |
+
+特别保留以下例外：
+
+- 外部系统通过API调用的Apex。
+- 定时任务及人工执行的批处理。
+- 动态SOQL、动态类名、字符串构造的引用。
+- 通过URL、按钮或业务手顺进入的页面。
+- 人工打开的报表。
+- 未在当前Sandbox安排运行的生产作业。
+
+因此：
+不要自动删除“零静态引用”的资源。
+先放入“使用依据待确认”。
+
+---
+
+## 9. 第六步：按需Retrieve，分析代码与配置规模
+
+只有需要代码量、依赖或复杂度分析时才执行。
+源码继续保留在公司认可的工作区。
+
+先确认当前目录有：
+
+```bash
+ls sfdx-project.json
+```
+
+如果没有，先进入既有Salesforce项目。
+不要把Retrieve直接写到正在开发的源码目录。
+
+### 9.1 分批取得代码资源
+
+```bash
+sf project retrieve start \
+  --target-org "$INVENTORY_ORG" \
+  --metadata ApexClass \
+  --metadata ApexTrigger \
+  --output-dir "$INVENTORY_RUN/source-code" \
+  --json \
+  > "$INVENTORY_RUN/raw/retrieve-code.json" \
+  2> "$INVENTORY_RUN/logs/retrieve-code.log"
+```
+
+### 9.2 分批取得页面和自动化
+
+```bash
+sf project retrieve start \
+  --target-org "$INVENTORY_ORG" \
+  --metadata LightningComponentBundle \
+  --metadata AuraDefinitionBundle \
+  --metadata ApexPage \
+  --metadata ApexComponent \
+  --metadata Flow \
+  --metadata FlexiPage \
+  --output-dir "$INVENTORY_RUN/source-ui-flow" \
+  --json \
+  > "$INVENTORY_RUN/raw/retrieve-ui-flow.json" \
+  2> "$INVENTORY_RUN/logs/retrieve-ui-flow.log"
+```
+
+量大时，继续按类型或明确组件名单拆分。
+查看Retrieve结果中的成功项、警告和失败项。
+
+### 9.3 标准对象需要明确指定
+
+不能认为CustomObject的通配符包含所有标准对象。
+
+例如，内部确认Account需要调查时：
+
+```bash
+sf project retrieve start \
+  --target-org "$INVENTORY_ORG" \
+  --metadata "CustomObject:Account" \
+  --output-dir "$INVENTORY_RUN/source-objects" \
+  --json \
+  > "$INVENTORY_RUN/raw/retrieve-account.json" \
+  2> "$INVENTORY_RUN/logs/retrieve-account.log"
+```
+
+其他标准对象按实际候选列表处理。
+Account只是公开标准对象的示例，不代表本项目一定使用它。
+
+### 9.4 第二轮建议统计的开发量
+
+Apex：
+- 业务类数量。
+- 测试类数量。
+- Trigger数量。
+- 业务代码和测试代码物理行数。
+- Batch／Queueable／Schedulable等实现类数量。
+
+页面：
+- LWC按Bundle计数。
+- Aura按Bundle计数。
+- Visualforce Page／Component分别计数。
+- 不把HTML、JS、CSS各算一个LWC。
+
+Flow：
+- 按定义计数。
+- 启用状态和类型单列。
+- 元素数量可作复杂度辅助。
+- 版本数单列，不混入定义数。
+
+对象：
+- 自定义对象数量。
+- 标准对象上的项目定制单列。
+- 自定义字段、校验规则、Record Type分别计数。
+
+Workflow／SharingRules：
+- 列举结果可能是对象级容器。
+- 需要读取其定义后，再统计内部规则数量。
+- 不把“10个SharingRules容器”汇报成“10条共享规则”。
+
+权限：
+- Profile、权限集、权限集组分别统计。
+- 标准定义与项目定制区分。
+- Profile提取范围可能影响取得的权限内容。
+- 不声称一次Retrieve就完整证明了最终有效权限。
+
+所有代码行数、依赖扫描结果应由脚本计算。
+字符串匹配和正则分析得到的结果标记为“启发式”，保留人工核对。
+
+---
+
+## 10. 如何最大化利用免费GPT，而不上传公司资源
+
+### 10.1 最适合交给GPT的任务
+
+1. 基于公开API格式生成统计脚本。
+2. 生成CSV合并、去重、分类汇总脚本。
+3. 用虚构数据验证脚本。
+4. 生成Excel公式和数据透视表操作步骤。
+5. 提供公开Metadata结构的解析方法。
+6. 根据抽象错误类型排查命令。
+7. 提供日文汇报模板。
+8. 生成不包含公司内容的续接Prompt。
+
+### 10.2 不这样操作
+
+- “这是我公司的XML，请帮我看。”
+- “这是我的Apex，请帮我找引用。”
+- “这是资源清单，帮我判断哪些在用。”
+- “我把字段名换一下就可以上传。”
+- 直接粘贴完整终端错误、命令日志或截图。
+
+脱敏不能由个人自行认定足够。
+
+### 10.3 通用辅助Prompt
+
+```text
+你是Salesforce CLI、Node.js和技术资产盘点的顾问。
+
+我在公司认可的Salesforce IDE工作区执行命令。
+代码、Metadata、资源名称、用户资料、日志和结果文件都不能上传给你。
+
+你只能基于公开Salesforce API格式及虚构数据：
+- 生成通用脚本；
+- 解释命令；
+- 设计本地统计流程；
+- 提供Excel公式；
+- 生成日文汇报模板。
+
+不要要求我上传任何实际文件、源码、资源清单或截图。
+不要假设汇总数字或脱敏内容就一定可以外发。
+
+脚本要求：
+1. 优先使用Node.js内置模块，不安装第三方依赖。
+2. 不执行组织写操作。
+3. 原始结果与分析结果分开保存。
+4. 读取失败、缺失、结构异常不能转换成0件。
+5. 按资源类型＋完整名称去重。
+6. 归属、静态引用、启用状态、运行依据分开处理。
+7. 不根据零静态引用断言资源未使用。
+8. 提供虚构测试输入和预期结果。
+9. 输出统计口径与已知局限。
+10. 避免打印任何认证资料。
+
+本次我要你完成的通用辅助任务：
+【在这里填写：CSV汇总／代码行数统计／Flow元素统计等】
+
+我只会提供不含公司信息的公开格式说明或虚构示例。
+```
+
+### 10.4 排错时可以如何提问
+
+例如：
+
+“在浏览器版Linux终端运行sf org list metadata，
+某个公开Metadata类型得到INVALID_TYPE。
+请解释通用原因和只读排查步骤，不需要我提供组织信息。”
+
+或者：
+
+“请用虚构的Account.Example__c等示例，
+生成按对象汇总字段数量的Node脚本。
+不要要求提供我的实际文件。”
+
+---
+
+## 11. 领导汇报的推荐结构
+
+标题：
+
+Salesforce開発資産の規模調査（初版）
+
+### 11.1 一页概要
+
+1. 調査対象
+   - 环境。
+   - 调查基准日。
+   - 项目范围。
+
+2. 開発資産規模
+   - 自定义对象。
+   - 自定义字段。
+   - 业务Apex／测试Apex／Trigger。
+   - LWC／Aura／Visualforce。
+   - Flow及主要声明式配置。
+   - 项目定制的权限、共享资源。
+
+3. 標準機能・外部依存
+   - 涉及的标准对象。
+   - 主要安装包。
+   - 外部连接配置线索。
+
+4. 使用状況
+   - 已有使用依据。
+   - 启用或引用依据。
+   - 尚未确认。
+   - 已确认停用。
+
+5. 調査上の制約
+   - 无权限或未取得的范围。
+   - 包内不可见资源。
+   - 动态调用／外部调用尚待确认。
+   - Sandbox与生产差异。
+
+6. 次の対応
+   - 确认负责人。
+   - 确认历史资源。
+   - 重点功能的结构调查。
+
+### 11.2 日文说明模板
+
+本調査では、Salesforce環境に存在する全標準リソースではなく、
+対象プロジェクトの開発・カスタマイズ資産を中心に規模を整理した。
+
+標準オブジェクト自体は開発件数に含めず、
+当該オブジェクトに対するカスタム項目・入力規則・
+レコードタイプ等の定義を別途集計した。
+
+また、パッケージ資産および標準機能の利用範囲は、
+自社開発資産と区分して記載した。
+
+使用状況は、有効設定・参照関係・実行記録・担当者確認等の
+根拠に基づいて分類している。
+参照が検出されなかった資産については、
+未使用と断定せず、確認対象として整理した。
+
+### 11.3 数字尚未确认时的写法
+
+使用：
+
+- 未集計。
+- 取得範囲内で○件。
+- 帰属確認中。
+- 使用状況確認中。
+- パッケージ資産を除く。
+- 標準オブジェクト上の定義を含む。
+
+不要使用：
+
+- 全部取得済み：实际存在缺口时。
+- 未使用：只是没搜到引用时。
+- 自社開発：归属尚未确认时。
+- 開発工数○人日：只有组件数量时。
+
+---
+
+## 12. 完成检查表
+
+### 第一轮：数量初版
+
+- [ ] 确认目标Sandbox。
+- [ ] 记录CLI版本和调查基准日。
+- [ ] 独立调查目录已创建。
+- [ ] Metadata类型和安装包清单已取得或记录失败原因。
+- [ ] 资源候选清单已生成。
+- [ ] 文件夹资源已列举并记录可见范围。
+- [ ] 失败和警告没有被当成0件。
+- [ ] 标准对象上的自定义字段没有遗漏。
+- [ ] Flow定义与版本没有混算。
+- [ ] Workflow／SharingRules容器没有当成内部规则数。
+
+### 第二轮：报告口径
+
+- [ ] 项目自研、标准、安装包、其他项目已区分。
+- [ ] 标准对象本体与其定制已区分。
+- [ ] 资源归属和使用依据分别记录。
+- [ ] 没有引用的资源保留为待确认。
+- [ ] 测试类、业务类、Bundle等计量单位明确。
+- [ ] 汇报中的数字均有内部证据可追溯。
+- [ ] 未确认事项、负责人和下一步已整理。
+- [ ] 公司资源及结果没有上传到个人GPT。
